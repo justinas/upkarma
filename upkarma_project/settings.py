@@ -7,6 +7,8 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+AUTH_USER_MODEL = 'karma.User'
+
 TIME_ZONE = 'GMT'
 LANGUAGE_CODE = 'lt-LT'
 
@@ -66,6 +68,7 @@ INSTALLED_APPS = (
     # 'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
+    'karma'
 )
 
 # A sample logging configuration. The only tangible logging
