@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from .utils import get_global_client
+from .exceptions import SenderBanned, ReceiverBanned
 
 class User(AbstractBaseUser):
     screen_name = models.CharField('Twitter screen name', unique=True,
@@ -58,6 +59,15 @@ class Tweet(models.Model):
     twitter_id = models.CharField('Twitter id of the tweet', max_length=255)
 
     text = models.TextField(blank=True)
+
+
+    def clean_sender(self):
+        if self.sender.banned:
+            raise SenderBanned()
+
+    def clean_receiver(self):
+        if self.receiver.banned:
+            raise ReceiverBanned()
 
     def __str__(self):
         return '{0} points @{1} -> @{2}'.format(self.amount,

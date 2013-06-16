@@ -1,3 +1,5 @@
+from django.core.exceptions import ValidationError
+
 class BadFormat(Exception):
     """
     An exception specifying that the supplied tweet
@@ -5,14 +7,14 @@ class BadFormat(Exception):
     """
     pass
 
-class Banned(Exception):
+class Banned(ValidationError):
     """
     An exception specifying
     that a user has been banned from the game
     """
     pass
 
-class SenderBanned(Exception):
+class SenderBanned(ValidationError):
     """
     A specific Banned exception
     used when the banned user
@@ -20,7 +22,7 @@ class SenderBanned(Exception):
     """
     pass
 
-class ReceiverBanned(Exception):
+class ReceiverBanned(ValidationError):
     """
     A specific Banned exception
     used when the banned user
