@@ -124,7 +124,7 @@ UPKARMA_SETTINGS = {
         'consumer_key' : 'dummy',
         'consumer_secret' : 'dummy',
     },
-    'bot_credentials': {
+    'global_credentials': {
         'consumer_key' : 'dummy',
         'consumer_secret' : 'dummy',
         'token' : 'dummy',
