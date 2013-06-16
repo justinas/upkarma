@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
-
-# Create your models here.
+from .utils import get_global_client
 
 class User(AbstractBaseUser):
     screen_name = models.CharField('Twitter screen name', unique=True,
@@ -18,6 +17,24 @@ class User(AbstractBaseUser):
     # django auth thingies
     USERNAME_FIELD = 'screen_name'
     REQUIRED_FIELDS = ['twitter_id']
+
+    @classmethod
+    def from_twitter_id(cls, twitter_id):
+        """
+        Given a user's twitter_id, creates a User,
+        prefilled with info from his twitter account,
+        saves and returns it
+        """
+        u = cls()
+        tw = get_global_client()
+
+        info = tw.users.show(user_id=twitter_id)
+        u.screen_name = info['screen_name']
+        u.avatar = info['profile_background_image_url']
+
+        u.save()
+
+        return u
 
 class Tweet(models.Model):
     """
