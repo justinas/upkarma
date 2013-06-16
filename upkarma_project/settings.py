@@ -1,4 +1,5 @@
 import os
+import re
 
 DIRNAME = os.path.dirname(__file__)
 
@@ -129,7 +130,8 @@ UPKARMA_SETTINGS = {
         'consumer_secret' : 'dummy',
         'token' : 'dummy',
         'token_secret' : 'dummy',
-    }
+    },
+    're_amount' : re.compile(r'#upkarma\s+(\d)(?!\d)'),
 }
 
 try:
