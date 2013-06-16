@@ -30,7 +30,7 @@ class User(AbstractBaseUser):
 
         info = tw.users.show(user_id=twitter_id)
         u.screen_name = info['screen_name']
-        u.avatar = info['profile_background_image_url']
+        u.avatar = info['profile_image_url']
 
         u.save()
 
