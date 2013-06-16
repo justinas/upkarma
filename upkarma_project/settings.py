@@ -74,7 +74,8 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'karma',
-    'karma.importer'
+    'karma.importer',
+    'karma.bot',
 )
 
 # let's put it in the container folder and not the project folder itself
