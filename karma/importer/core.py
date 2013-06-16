@@ -23,6 +23,12 @@ def import_from_dump(blob, silent=False):
             log.info('{0} saved'.format(u))
 
         elif obj['model'] == 'karma.tweet':
+            if obj['fields']['text'].startswith('RT @'):
+                continue # skip retweets
+            log.info('Skipping Tweet id {0} due to being a retweet'.format(
+                obj['pk'])
+            )
+
             t = Tweet()
             t.amount = obj['fields']['amount']
             t.date = datetime.strptime(obj['fields']['date'], DATE_FORMAT)
