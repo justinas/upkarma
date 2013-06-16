@@ -1,3 +1,4 @@
+#encoding=utf8
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from .utils import get_global_client
@@ -61,13 +62,17 @@ class Tweet(models.Model):
     text = models.TextField(blank=True)
 
 
-    def clean_sender(self):
+    def clean(self):
+        # ban checks
         if self.sender.banned:
-            raise SenderBanned()
-
-    def clean_receiver(self):
+            raise SenderBanned('Jūs buvote pašalintas iš žaidimo.')
         if self.receiver.banned:
-            raise ReceiverBanned()
+            raise ReceiverBanned('Vartotojas, kuriam siunčiate karmos'
+                    ' buvo pašalintas iš žaidimo')
+
+    def save(self, **kwargs):
+        self.full_clean()
+        super(Tweet, self).save(**kwargs)
 
     def __str__(self):
         return '{0} points @{1} -> @{2}'.format(self.amount,
