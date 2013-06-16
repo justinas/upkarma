@@ -41,3 +41,8 @@ class Tweet(models.Model):
     twitter_id = models.CharField('Twitter id of the tweet', max_length=255)
 
     text = models.TextField(blank=True)
+
+    def __str__(self):
+        return '{0} points @{1} -> @{2}'.format(self.amount,
+                                                self.sender,
+                                                self.receiver)
