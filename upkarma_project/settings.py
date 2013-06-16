@@ -120,11 +120,11 @@ LOGGING = {
 }
 
 UPKARMA_SETTINGS = {
-    'app_credentials' : {
+    'app_credentials': {
         'consumer_key' : 'dummy',
         'consumer_secret' : 'dummy',
-    }
-    'bot_credentials' : {
+    },
+    'bot_credentials': {
         'consumer_key' : 'dummy',
         'consumer_secret' : 'dummy',
         'token' : 'dummy',
