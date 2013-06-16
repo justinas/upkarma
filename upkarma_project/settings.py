@@ -1,3 +1,7 @@
+import os
+
+DIRNAME = os.path.dirname(__file__)
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -68,22 +72,33 @@ INSTALLED_APPS = (
     # 'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
-    'karma'
+    'karma',
+    'karma.importer'
 )
 
-# A sample logging configuration. The only tangible logging
-# performed by this configuration is to send an email to
-# the site admins on every HTTP 500 error.
-# See http://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
+# let's put it in the container folder and not the project folder itself
+IMPORTER_LOG_FILENAME = os.path.join(DIRNAME, '..',
+                                     'karma_importer.log')
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters' : {
+        'simple': {
+            'format' : '%(asctime)s [%(name)s] %(message)s'
+        }
+    },
     'handlers': {
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
             'filters': ['require_debug_false'],
+        },
+        'log_importer': {
+            'level' : 'INFO',
+            'class' : 'logging.FileHandler',
+            'formatter' : 'simple',
+            'filename' : IMPORTER_LOG_FILENAME,
         }
     },
     'filters': {
@@ -97,6 +112,23 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+        'karma.importer' : {
+            'handlers' : ['log_importer'],
+            'level' : 'INFO',
+        }
+    }
+}
+
+UPKARMA_SETTINGS = {
+    'app_credentials' : {
+        'consumer_key' : 'dummy',
+        'consumer_secret' : 'dummy',
+    }
+    'bot_credentials' : {
+        'consumer_key' : 'dummy',
+        'consumer_secret' : 'dummy',
+        'token' : 'dummy',
+        'token_secret' : 'dummy',
     }
 }
 
