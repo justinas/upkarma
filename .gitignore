@@ -37,3 +37,4 @@ nosetests.xml
 
 # this don't need to be in the repo
 local_settings.py
+*.log
