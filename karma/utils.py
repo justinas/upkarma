@@ -21,3 +21,18 @@ def get_week_start(today=None):
     # subtract the amount of days
     # that has passed since Monday
     return today - timedelta(days=today.weekday())
+
+def tweetback(message, tweet):
+    """
+    Replies to the author of tweet
+    with a specified message
+    """
+    client = get_global_client()
+    message = u'@{0} {1}'.format(tweet['user']['screen_name'], message)
+    try:
+        client.statuses.update(status=message,
+                            in_reply_to_status_id=tweet['id_str'])
+    except TwitterError as e:
+        # TODO: log
+        pass
+
