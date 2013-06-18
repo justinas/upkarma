@@ -1,7 +1,8 @@
 #encoding=utf8
 from django.db import models
+from django.db.models import Sum
 from django.contrib.auth.models import AbstractBaseUser
-from .utils import get_global_client
+from .utils import get_global_client, get_week_start
 from .exceptions import SenderBanned, ReceiverBanned
 
 class User(AbstractBaseUser):
@@ -37,6 +38,22 @@ class User(AbstractBaseUser):
         u.save()
 
         return u
+
+    def get_limit_usage(self, receiver=None):
+        """
+        Gets User's point sending limit usage
+        If receiver is not none, also gets the usage
+        for the specific receiver
+        """
+        usage = {}
+        base_qs = self.karma_sends.filter(date__gte=get_week_start())
+        usage['per_week'] = base_qs.aggregate(s=Sum('amount'))['s'] or 0
+
+        if receiver is not None:
+            qs = base_qs.filter(receiver=receiver)
+            usage['per_week_receiver'] = qs.aggregate(s=Sum('amount'))['s'] or 0
+
+        return usage
 
 class Tweet(models.Model):
     """
