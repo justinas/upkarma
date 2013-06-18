@@ -82,10 +82,10 @@ class Tweet(models.Model):
     def clean(self):
         # ban checks
         if self.sender.banned:
-            raise SenderBanned('Jūs buvote pašalintas iš žaidimo.')
+            raise SenderBanned(u'Jūs buvote pašalintas iš žaidimo.')
         if self.receiver.banned:
-            raise ReceiverBanned('Vartotojas, kuriam siunčiate karmos'
-                    ' buvo pašalintas iš žaidimo')
+            raise ReceiverBanned(u'Vartotojas, kuriam siunčiate karmos'
+                    u' buvo pašalintas iš žaidimo')
 
     def save(self, skip_checks=False, **kwargs):
         """
