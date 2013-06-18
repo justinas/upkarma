@@ -1,5 +1,8 @@
+from datetime import datetime
+
 from django.test import TestCase
 from django.db.models import Sum
+
 from karma.importer import import_from_dump
 from karma.models import Tweet, User
 
@@ -90,13 +93,23 @@ class ImporterTestCase(TestCase):
 
     def test_creates_tweets(self):
         import_from_dump(self.TWEET_BLOB)
+
         self.assertEquals(Tweet.objects.count(), 2)
-        self.assertEquals(Tweet.objects.get(pk=1).amount, 5)
-        self.assertEquals(Tweet.objects.get(pk=2).amount, 1)
+
+        t1 = Tweet.objects.get(pk=1)
+        t2 = Tweet.objects.get(pk=2)
+
+        self.assertEquals(t1.amount, 5)
+        self.assertEquals(t2.amount, 1)
+
+        self.assertEquals(t1.date, datetime(2011, 11, 26, 14, 17, 18))
+        self.assertEquals(t1.text, "#upkarma 5 @cool_guy")
+
         cnt1 = User.objects.filter(pk=1).aggregate(
             s=Sum('karma_receives__amount'))['s']
         cnt2 = User.objects.filter(pk=2).aggregate(
             s=Sum('karma_receives__amount'))['s']
+
         self.assertEquals(cnt1, 5)
         self.assertEquals(cnt2, 1)
 
