@@ -24,10 +24,10 @@ def import_from_dump(blob, silent=False):
 
         elif obj['model'] == 'karma.tweet':
             if obj['fields']['text'].startswith('RT @'):
+                log.info('Skipping Tweet id {0} due to being a retweet'.format(
+                    obj['pk'])
+                )
                 continue # skip retweets
-            log.info('Skipping Tweet id {0} due to being a retweet'.format(
-                obj['pk'])
-            )
 
             t = Tweet()
             t.amount = obj['fields']['amount']
