@@ -1,9 +1,56 @@
 import httpretty
+import json
 
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 
+try:
+    from urlparse import parse_qs
+except ImportError:
+    from urllib.parse import parse_qs
+
 from .models import Tweet, User
+from .utils import tweetback
+
+def get_req_arg(key):
+    """
+    Gets an arg from httpretty's last request
+    """
+    args = parse_qs(httpretty.HTTPretty.last_request.body)
+    return args[key][0].decode('utf-8')
+
+def get_base_tweet():
+    """
+    This function returns a tweet template
+    we then build upon in tests.
+    The template is a perfectly valid tweet
+    for upkarma.
+    """
+    return json.loads("""
+    {
+    "id_str": "1",
+    "entities": {
+        "user_mentions": [
+            {"name":"Guy 2",
+            "indices":[11,16],
+            "screen_name":"guy2",
+            "id":2,
+            "id_str":"2"}
+        ]
+    },
+    "text": "#upkarma 5 @guy2",
+    "in_reply_to_status_id_str": null,
+    "id": 1,
+    "user": {
+        "name": "Guy 1",
+        "profile_image_url": "http://a0.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3_normal.png",
+        "id_str": "1",
+        "profile_image_url_https": "https://si0.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3_normal.png",
+        "id": 1,
+        "profile_background_image_url": "http://a0.twimg.com/images/themes/theme1/bg.png",
+        "screen_name": "guy1"
+    }
+    }""")
 
 
 # it doesn't seem like we need any other fields yet
@@ -89,3 +136,16 @@ class TweetModelTest(TestCase):
         t = Tweet(amount=5, twitter_id='42', receiver=self.guy2,
                 sender=self.guy1)
         self.assertRaises(ValidationError, t.save)
+
+class TweetbackTest(TestCase):
+    @httpretty.activate
+    def test_tweets_back(self):
+        httpretty.register_uri(httpretty.POST,
+                               'https://api.twitter.com/1.1/statuses/update.json',
+                               body=json.dumps('{}'))
+
+        t = get_base_tweet()
+        tweetback("You're a wizard, Harry", t)
+
+        self.assertEquals(get_req_arg('status'), "@guy1 You're a wizard, Harry")
+        self.assertEquals(get_req_arg('in_reply_to_status_id'), str(t['id']))
