@@ -133,6 +133,11 @@ UPKARMA_SETTINGS = {
         'token_secret' : 'dummy',
     },
     're_amount' : re.compile(r'#upkarma\s+(\d)(?!\d)'),
+    'limits' : {
+        'per_week' : 50,
+        'per_week_receiver' : 15
+    },
+    'valid_amount_range' : (1,5+1),
 }
 
 try:
