@@ -36,11 +36,11 @@ def import_from_dump(blob, silent=False):
             t.text = obj['fields']['text']
             t.twitter_id = obj['fields']['twitter_id']
             t.pk = obj['pk']
-            t.save()
+            t.save(skip_checks=True)
             # got to save again due to auto_now_add
             # overriding the explicit value of the field
             t.date = datetime.strptime(obj['fields']['date'], DATE_FORMAT)
-            t.save()
+            t.save(skip_checks=True)
             log.info('{0} saved'.format(t))
 
         else:

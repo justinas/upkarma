@@ -70,8 +70,14 @@ class Tweet(models.Model):
             raise ReceiverBanned('Vartotojas, kuriam siunčiate karmos'
                     ' buvo pašalintas iš žaidimo')
 
-    def save(self, **kwargs):
-        self.full_clean()
+    def save(self, skip_checks=False, **kwargs):
+        """
+        skip_checks is required when restoring a dump
+        because of limits filling up
+        """
+        if not skip_checks:
+            self.full_clean()
+
         super(Tweet, self).save(**kwargs)
 
     def __str__(self):
