@@ -4,6 +4,13 @@ from datetime import date, timedelta
 
 from django.conf import settings
 
+def flatten_qs(qs):
+    """
+    Flattens the query string dictionary
+    returned by parse_qs
+    """
+    return dict((i, qs[i][0]) for i in qs)
+
 def get_global_client():
     """
     The global client is used for
