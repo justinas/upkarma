@@ -1,5 +1,6 @@
 import httpretty
 import json
+from datetime import datetime
 
 from django.test import TestCase
 from django.core.exceptions import ValidationError
@@ -28,6 +29,7 @@ def get_base_tweet():
     """
     return json.loads("""
     {
+    "created_at": "Mon Sep 24 03:35:21 +0000 2012",
     "id_str": "1",
     "entities": {
         "user_mentions": [
@@ -64,6 +66,7 @@ USER_INFO_BLOB = """
   "screen_name": "rsarver"
 }
 """
+
 
 class UserModelTest(TestCase):
     def setUp(self):
@@ -102,7 +105,7 @@ class UserModelTest(TestCase):
         self.assertEquals(usage['per_week_receiver'], 0)
 
         Tweet.objects.create(twitter_id='123', amount=5, sender=self.guy1,
-                             receiver=self.guy2)
+                             receiver=self.guy2, date=datetime.now())
 
         # testing with a correct receiver
         usage = self.guy1.get_limit_usage(self.guy2)
@@ -149,3 +152,5 @@ class TweetbackTest(TestCase):
 
         self.assertEquals(get_req_arg('status'), "@guy1 You're a wizard, Harry")
         self.assertEquals(get_req_arg('in_reply_to_status_id'), str(t['id']))
+
+
