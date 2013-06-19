@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import re
 from twitter import Twitter, OAuth
+from datetime import datetime
 
 try:
     from urlparse import parse_qs
@@ -12,11 +13,12 @@ from django.core.exceptions import ValidationError
 
 from ..exceptions import BadFormat, SenderBanned, ReceiverBanned
 from ..models import User, Tweet
-from ..utils import tweetback
+from ..utils import (tweetback, get_redis_client, get_global_client,
+                     flatten_qs)
 
 DATE_FORMAT = '%a %b %d %H:%M:%S +0000 %Y'
 
-def parse_date(str)
+def parse_date(str):
     return datetime.strptime(str, DATE_FORMAT)
 
 
@@ -68,7 +70,7 @@ def process_tweet(tweet):
     try:
         t = Tweet(receiver=receiver, sender=sender, amount=amount,
                   text=text, twitter_id=tweet['id_str'],
-                  date=parse_date(tweet['created_at'])
+                  date=parse_date(tweet['created_at']))
         t.save()
     except ValidationError:
         # let the caller handle it
@@ -94,3 +96,31 @@ def process_or_tweetback(tweet):
         msg = e.messages[0]
 
     tweetback(msg, tweet)
+
+def catchup_tweets(since_id):
+    """
+    Returns a list of tweets
+    that happened since `since_id` until present
+    returns the id of the last processed tweet
+    """
+    tw = get_global_client()
+    red = get_redis_client()
+    tweets = []
+    args = dict(q='#upkarma', count=100, result_type='recent',
+                include_entities=1)
+
+    # fetch the tweets into a list
+    while True:
+        results = tw.search.tweets(**args)
+        tweets.extend(results['statuses'])
+        next_results = results['search_metadata'].get('next_results', None)
+        if next_results:
+            # remove the ? at the beginning
+            args = flatten_qs(parse_qs(next_results[1:]))
+        else:
+            break
+
+    # so we process the oldest ones first
+    tweets.reverse()
+
+    return tweets

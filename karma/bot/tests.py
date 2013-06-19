@@ -1,15 +1,17 @@
 #encoding=utf-8
 import json
-from mock import Mock, patch
+import sys
+from mock import Mock, patch, MagicMock
 import httpretty
 
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 
-from .core import process_tweet, process_or_tweetback
+from .core import process_tweet, process_or_tweetback, catchup_tweets
 from ..models import User, Tweet
 from ..exceptions import BadFormat
 from ..tests import get_req_arg, get_base_tweet
+from ..utils import flatten_qs
 
 USER_INFO_BLOB = """
 {
@@ -20,6 +22,32 @@ USER_INFO_BLOB = """
   "screen_name": "guy3"
 }
 """
+
+SEARCH_BLOBS = [
+    """
+    {
+    "search_metadata": {
+        "max_id": 4,
+        "since_id": 2,
+        "next_results": "?max_id=2&q=%23upkarma&count=2&include_entities=1&result_type=recent",
+        "since_id_str": "2",
+        "max_id_str": "4"
+    },
+    "statuses" : [{}, {}]
+    }
+    """,
+    """
+    {
+    "search_metadata": {
+        "max_id": 6,
+        "since_id": 4,
+        "since_id_str": "4",
+        "max_id_str": "6"
+    },
+    "statuses" : [{}, {}]
+    }
+    """,
+]
 
 
 class BotFormatHandlingTest(TestCase):
@@ -148,3 +176,25 @@ class ProcessOrTweetbackTest(TestCase):
         t = get_base_tweet()
         process_or_tweetback(t)
         self.assertTrue(get_req_arg('status').startswith(u'@guy1 Jūs buvote'))
+
+class CatchupTest(TestCase):
+    def setUp(self):
+        self.redis = Mock('karma.utils.get_redis_client',
+                return_value=MagicMock())
+
+    @httpretty.activate
+    def test_finds_all_tweets(self):
+        httpretty.register_uri(httpretty.GET,
+                'https://api.twitter.com/1.1/search/tweets.json',
+                responses=[
+                    httpretty.Response(body=SEARCH_BLOBS[0], status=200),
+                    httpretty.Response(body=SEARCH_BLOBS[1], status=200)
+                ])
+
+        tweets = catchup_tweets(0)
+        self.assertEquals(len(tweets), 4)
+
+        requests = httpretty.HTTPretty.latest_requests
+        self.assertEquals(len(requests), 2)
+
+        self.assertEquals(flatten_qs(requests[1].querystring)['max_id'], '2')
