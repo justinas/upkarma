@@ -1,6 +1,8 @@
+from redis import StrictRedis
 from twitter import Twitter, TwitterStream, OAuth
-from django.conf import settings
 from datetime import date, timedelta
+
+from django.conf import settings
 
 def get_global_client():
     """
@@ -14,6 +16,9 @@ def get_global_client():
 def get_stream_client():
     t = TwitterStream(auth=OAuth(**settings.UPKARMA_SETTINGS['global_credentials']))
     return t
+
+def get_redis_client():
+    return StrictRedis(**settings.UPKARMA_SETTINGS['redis'])
 
 def get_week_start(today=None):
     if not today:
