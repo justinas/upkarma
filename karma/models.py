@@ -73,7 +73,7 @@ class Tweet(models.Model):
         on_delete=models.SET_NULL
     )
     amount = models.IntegerField('Amount of points')
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField()
     twitter_id = models.CharField('Twitter id of the tweet', max_length=255)
 
     text = models.TextField(blank=True)

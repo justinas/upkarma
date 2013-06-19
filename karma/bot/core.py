@@ -2,12 +2,23 @@
 import re
 from twitter import Twitter, OAuth
 
+try:
+    from urlparse import parse_qs
+except ImportError:
+    from urllib.parse import parse_qs
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
 from ..exceptions import BadFormat, SenderBanned, ReceiverBanned
 from ..models import User, Tweet
 from ..utils import tweetback
+
+DATE_FORMAT = '%a %b %d %H:%M:%S +0000 %Y'
+
+def parse_date(str)
+    return datetime.strptime(str, DATE_FORMAT)
+
 
 def process_tweet(tweet):
     """
@@ -56,7 +67,8 @@ def process_tweet(tweet):
 
     try:
         t = Tweet(receiver=receiver, sender=sender, amount=amount,
-                  text=text, twitter_id=tweet['id_str'])
+                  text=text, twitter_id=tweet['id_str'],
+                  date=parse_date(tweet['created_at'])
         t.save()
     except ValidationError:
         # let the caller handle it
