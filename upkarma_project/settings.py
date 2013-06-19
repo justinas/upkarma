@@ -138,6 +138,9 @@ UPKARMA_SETTINGS = {
         'per_week_receiver' : 15
     },
     'valid_amount_range' : (1,5),
+    # passed to StrictRedis constructor
+    'redis' : {
+    }
 }
 
 try:
