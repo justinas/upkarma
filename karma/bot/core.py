@@ -3,9 +3,11 @@ import re
 from twitter import Twitter, OAuth
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 from ..exceptions import BadFormat, SenderBanned, ReceiverBanned
-from ..models import User
+from ..models import User, Tweet
+from ..utils import tweetback
 
 def process_tweet(tweet):
     """
@@ -15,10 +17,10 @@ def process_tweet(tweet):
     """
     mentions = tweet['entities']['user_mentions']
     if not mentions:
-        raise BadFormat('Nenurodėte, kokiam vartotojui duoti karmos')
+        raise BadFormat(u'Nenurodėte, kokiam vartotojui duoti karmos')
     if len(mentions) > 1:
-        raise BadFormat('Žinutėje daugiau negu vienas vartotojas '
-                        '– karmos nebus duota')
+        raise BadFormat(u'Žinutėje daugiau negu vienas vartotojas '
+                        u'– karmos nebus duota')
 
     receiver_data = mentions[0]
 
@@ -35,7 +37,7 @@ def process_tweet(tweet):
             re.findall(settings.UPKARMA_SETTINGS['re_amount'], clean_text)[0]
         )
     except IndexError:
-        raise BadFormat('Nenurodyta, kiek karmos taškų skirti')
+        raise BadFormat(u'Nenurodyta, kiek karmos taškų skirti')
 
     # finding the sender
     try:
@@ -51,3 +53,32 @@ def process_tweet(tweet):
         receiver = User.objects.get(twitter_id=receiver_data['id_str'])
     except User.DoesNotExist:
         receiver = User.from_twitter_id(receiver_data['id_str'])
+
+    try:
+        t = Tweet(receiver=receiver, sender=sender, amount=amount,
+                  text=text, twitter_id=tweet['id_str'])
+        t.save()
+    except ValidationError:
+        # let the caller handle it
+        raise
+
+def process_or_tweetback(tweet):
+    """
+    Processes the tweet
+    and, in case of an error,
+    tweetsback at the user
+    with the error message
+    """
+    try:
+        process_tweet(tweet)
+        # no error, nothing to do here
+        return
+    except BadFormat as e:
+        msg = e.args[0]
+    except User.DoesNotExist:
+        msg = u'Jūs dar nedalyvaujate žaidime. ' \
+            u'Paprašykite žaidėjų vieno karmos taško.'
+    except ValidationError as e:
+        msg = e.messages[0]
+
+    tweetback(msg, tweet)

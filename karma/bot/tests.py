@@ -1,40 +1,25 @@
+#encoding=utf-8
 import json
-from mock import Mock
+from mock import Mock, patch
+import httpretty
 
 from django.test import TestCase
+from django.core.exceptions import ValidationError
 
-from .core import process_tweet
-from ..models import User
+from .core import process_tweet, process_or_tweetback
+from ..models import User, Tweet
 from ..exceptions import BadFormat
+from ..tests import get_req_arg, get_base_tweet
 
-def get_base_tweet():
-    # this is a tweet template
-    # we replace some values for each test
-    return json.loads("""
-    {
-    "id_str": "1",
-    "entities": {
-        "user_mentions": [
-            {"name":"Guy 2",
-            "indices":[11,16],
-            "screen_name":"guy2",
-            "id":2,
-            "id_str":"2"}
-        ]
-    },
-    "text": "#upkarma 5 @guy2",
-    "in_reply_to_status_id_str": null,
-    "id": 1,
-    "user": {
-        "name": "Guy 1",
-        "profile_image_url": "http://a0.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3_normal.png",
-        "id_str": "1",
-        "profile_image_url_https": "https://si0.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3_normal.png",
-        "id": 1,
-        "profile_background_image_url": "http://a0.twimg.com/images/themes/theme1/bg.png",
-        "screen_name": "guy1"
-    }
-    }""")
+USER_INFO_BLOB = """
+{
+  "profile_image_url": "http://a0.twimg.com/profile_images/1777569006/image1327396628_normal.png",
+  "id_str": "3",
+  "profile_image_url_https": "https://si0.twimg.com/profile_images/1777569006/image1327396628_normal.png",
+  "id": 3,
+  "screen_name": "guy3"
+}
+"""
 
 
 class BotFormatHandlingTest(TestCase):
@@ -62,13 +47,31 @@ class BotFormatHandlingTest(TestCase):
 
         self.assertRaises(BadFormat, process_tweet, t)
 
+    def test_bot_extracts_amount_correctly(self):
+        t = get_base_tweet()
+        t['text'] = '#upkarma 3 @guy1'
+
 class BotUserFindingTest(TestCase):
     def setUp(self):
-        User.objects.create(screen_name='guy1', twitter_id='1')
-        User.objects.create(screen_name='guy2', twitter_id='2')
+        self.guy1 = User.objects.create(screen_name='guy1', twitter_id='1')
+        self.guy2 = User.objects.create(screen_name='guy2', twitter_id='2')
+
+        self.fti_mock = Mock(wraps=User.from_twitter_id)
+        self.fti_patch = patch('karma.models.User.from_twitter_id',
+                           new=self.fti_mock)
+        self.fti_patch.start()
+
+        httpretty.enable()
+        httpretty.register_uri(httpretty.GET,
+                               "https://api.twitter.com/1.1/users/show.json",
+                               body=USER_INFO_BLOB)
 
     def tearDown(self):
         User.objects.all().delete()
+        Tweet.objects.all().delete()
+
+        self.fti_patch.stop()
+        httpretty.disable()
 
     def test_non_existant_sender(self):
         t = get_base_tweet()
@@ -79,8 +82,6 @@ class BotUserFindingTest(TestCase):
         """
         from_twitter_id should be called when a receiver doesn't exist
         """
-        mock = Mock()
-        User.from_twitter_id = mock
 
         t = get_base_tweet()
         t['entities']['user_mentions'][0]['screen_name'] = 'guy3'
@@ -88,4 +89,62 @@ class BotUserFindingTest(TestCase):
         t['entities']['user_mentions'][0]['id'] = 3
 
         process_tweet(t)
-        self.assertTrue(mock.called)
+        self.assertTrue(self.fti_mock.called)
+        self.assertEquals(User.objects.count(), 3)
+        self.assertEquals(Tweet.objects.count(), 1)
+
+    def test_sender_banned(self):
+        """
+        Even though we test for those in karma.tests,
+        we test ban checking here too to
+        ensure that it reraises
+        ValidationErrors from Tweet.save()
+        """
+
+        self.guy1.banned = True
+        self.guy1.save()
+        self.assertRaises(ValidationError, process_tweet, get_base_tweet())
+
+    def test_receiver_banned(self):
+        self.guy2.banned = True
+        self.guy2.save()
+        self.assertRaises(ValidationError, process_tweet, get_base_tweet())
+
+class ProcessOrTweetbackTest(TestCase):
+    def setUp(self):
+        self.guy1 = User.objects.create(screen_name='guy1', twitter_id='1')
+        self.guy2 = User.objects.create(screen_name='guy2', twitter_id='2')
+
+    def tearDown(self):
+        User.objects.all().delete()
+        Tweet.objects.all().delete()
+
+    def test_doesnt_tweetback_on_sucess(self):
+        twb = Mock('karma.utils.tweetback')
+        process_or_tweetback(get_base_tweet())
+        self.assertFalse(twb.called)
+
+    @httpretty.activate
+    def test_tweets_back_errors_correctly(self):
+        httpretty.register_uri(httpretty.POST,
+                               'https://api.twitter.com/1.1/statuses/update.json',
+                               body=json.dumps('{}'))
+        # BadFormat
+        t = get_base_tweet()
+        t['text'] = '#upkarma'
+
+        process_or_tweetback(t)
+        self.assertTrue(get_req_arg('status').startswith(u'@guy1 Nenurodyta'))
+
+        # User.DoesNotExist
+        t = get_base_tweet()
+        t['user']['id_str'] = '12435'
+        process_or_tweetback(t)
+        self.assertTrue(get_req_arg('status').startswith(u'@guy1 Jūs dar'))
+
+        # ValidationError
+        self.guy1.banned = True
+        self.guy1.save()
+        t = get_base_tweet()
+        process_or_tweetback(t)
+        self.assertTrue(get_req_arg('status').startswith(u'@guy1 Jūs buvote'))
