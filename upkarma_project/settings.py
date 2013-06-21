@@ -133,6 +133,7 @@ UPKARMA_SETTINGS = {
         'token' : 'dummy',
         'token_secret' : 'dummy',
     },
+    'hashtag' : '#upkarma',
     're_amount' : re.compile(r'#upkarma\s+(\d)(?!\d)'),
     'limits' : {
         'per_week' : 50,
