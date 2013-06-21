@@ -6,7 +6,10 @@ django-postgrespool==0.2.4
 httpretty==0.6.1
 ipython==0.13.2
 mock==1.0.1
+oauthlib==0.4.2
 psycopg2==2.5
 redis==2.7.6
+requests==1.2.3
+requests-oauthlib==0.3.2
 twitter==1.9.4
 wsgiref==0.1.2

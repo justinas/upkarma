@@ -76,6 +76,7 @@ INSTALLED_APPS = (
     'karma',
     'karma.importer',
     'karma.bot',
+    'karma.stream',
 )
 
 # let's put it in the container folder and not the project folder itself
