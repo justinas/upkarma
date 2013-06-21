@@ -1,10 +1,14 @@
 from datetime import datetime
 
+from django.conf import settings
 from django.test import TestCase
 from django.db.models import Sum
 
-from karma.importer import import_from_dump
-from karma.models import Tweet, User
+from .core import import_from_dump
+from ..models import Tweet, User
+from ..tests import ht
+
+HASHTAG = settings.UPKARMA_SETTINGS['hashtag']
 
 class ImporterTestCase(TestCase):
     USER_BLOB = """
@@ -41,7 +45,7 @@ class ImporterTestCase(TestCase):
         "date": "2011-11-26T14:17:18",
         "receiver": 1,
         "sender": 2,
-        "text": "#upkarma 5 @cool_guy",
+        "text": "%s 5 @cool_guy",
         "twitter_id": "5678"
     },
     "model": "karma.tweet",
@@ -54,27 +58,28 @@ class ImporterTestCase(TestCase):
         "date": "2011-11-26T14:18:41",
         "receiver": 2,
         "sender": 1,
-        "text": "#upkarma 1 ta\u0161kas @Apsega",
+        "text": "%s 1 ta\u0161kas @Apsega",
         "twitter_id": "140434086970929153"
         },
     "model": "karma.tweet",
     "pk": 2
-    }]"""
+    }]""" % (HASHTAG, HASHTAG)
 
     RT_BLOB = """
     [{
-    "fields": {
+    "fields":
+        {
         "amount": 5,
         "date": "2011-11-26T14:17:18",
         "receiver": 1,
         "sender": 2,
-        "text": "RT @cool_guy: #upkarma 5 @lulz",
+        "text": "RT @cool_guy: %s 5 @lulz",
         "twitter_id": "5678"
         },
     "model": "karma.tweet",
     "pk": 3
     }]
-    """
+    """ % HASHTAG
 
     def setUp(self):
         import_from_dump(self.USER_BLOB)
@@ -103,7 +108,7 @@ class ImporterTestCase(TestCase):
         self.assertEquals(t2.amount, 1)
 
         self.assertEquals(t1.date, datetime(2011, 11, 26, 14, 17, 18))
-        self.assertEquals(t1.text, "#upkarma 5 @cool_guy")
+        self.assertEquals(t1.text, ht(" 5 @cool_guy"))
 
         cnt1 = User.objects.filter(pk=1).aggregate(
             s=Sum('karma_receives__amount'))['s']

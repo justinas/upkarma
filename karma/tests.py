@@ -2,6 +2,7 @@ import httpretty
 import json
 from datetime import datetime
 
+from django.conf import settings
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 
@@ -12,6 +13,14 @@ except ImportError:
 
 from .models import Tweet, User
 from .utils import tweetback
+
+HASHTAG = settings.UPKARMA_SETTINGS['hashtag']
+
+def ht(string):
+    """
+    Prepends the current hashtag to a string
+    """
+    return HASHTAG+string
 
 def get_req_arg(key):
     """
@@ -40,7 +49,7 @@ def get_base_tweet():
             "id_str":"2"}
         ]
     },
-    "text": "#upkarma 5 @guy2",
+    "text": "%s 5 @guy2",
     "in_reply_to_status_id_str": null,
     "id": 1,
     "user": {
@@ -52,7 +61,7 @@ def get_base_tweet():
         "profile_background_image_url": "http://a0.twimg.com/images/themes/theme1/bg.png",
         "screen_name": "guy1"
     }
-    }""")
+    }""" % HASHTAG)
 
 
 # it doesn't seem like we need any other fields yet
