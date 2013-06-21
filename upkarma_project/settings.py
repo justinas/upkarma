@@ -134,6 +134,8 @@ UPKARMA_SETTINGS = {
         'token_secret' : 'dummy',
     },
     'hashtag' : '#upkarma',
+    # the hashtag, followed by one or more whitespace symbols,
+    # followed by a digit that is not followed by a digit
     're_amount' : re.compile(r'#upkarma\s+(\d)(?!\d)'),
     'limits' : {
         'per_week' : 50,
