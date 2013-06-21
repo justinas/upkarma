@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 class BadFormat(Exception):
     """
     An exception specifying that the supplied tweet
-    was not of a suitable format to be treated as a #upkarma tweet
+    was not of a suitable format to be treated as a karma tweet
     """
     pass
 
