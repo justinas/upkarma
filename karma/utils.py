@@ -1,8 +1,10 @@
 from redis import StrictRedis
-from twitter import Twitter, TwitterStream, OAuth
+from twitter import Twitter, OAuth
 from datetime import date, timedelta
 
 from django.conf import settings
+
+from .stream import TwitterStream
 
 def flatten_qs(qs):
     """
@@ -21,7 +23,7 @@ def get_global_client():
     return t
 
 def get_stream_client():
-    t = TwitterStream(auth=OAuth(**settings.UPKARMA_SETTINGS['global_credentials']))
+    t = TwitterStream(**settings.UPKARMA_SETTINGS['global_credentials'])
     return t
 
 def get_redis_client():
