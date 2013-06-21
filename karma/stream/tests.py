@@ -3,11 +3,6 @@ import httpretty
 import json
 from twitter import TwitterError
 
-try:
-    from urlparse import parse_qs
-except ImportError:
-    from urllib.parse import parse_qs
-
 from ..tests import get_base_tweet
 from ..utils import flatten_qs
 

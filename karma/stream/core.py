@@ -35,9 +35,4 @@ class TwitterStream(object):
 
                     yield obj
         except RequestException as e:
-            # whether there was a connection error
-            # or the stream was gracefully closed,
-            # raise a disconnection error below
-            pass
-
-        raise TwitterError('Disconnected: \n'+str(e))
+            raise TwitterError('Disconnected: \n'+str(e))
