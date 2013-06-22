@@ -132,22 +132,80 @@ class UserModelTest(TestCase):
 
 class TweetModelTest(TestCase):
     def setUp(self):
-        self.guy1 = User.objects.create(screen_name='guy1', twitter_id='1',
-                banned=True)
+        self.guy1 = User.objects.create(screen_name='guy1', twitter_id='1')
         self.guy2 = User.objects.create(screen_name='guy2', twitter_id='2')
 
     def tearDown(self):
         User.objects.all().delete()
 
     def test_receiver_banned(self):
+        # ban him
+        self.guy1.banned = True
+        self.guy1.save()
+
         t = Tweet(amount=5, twitter_id='42', receiver=self.guy1,
-                sender=self.guy2)
+                  sender=self.guy2, date=datetime.now())
         self.assertRaises(ValidationError, t.save)
 
     def test_sender_banned(self):
-        t = Tweet(amount=5, twitter_id='42', receiver=self.guy2,
-                sender=self.guy1)
+        self.guy2.banned = True
+        self.guy2.save()
+
+        t = Tweet(amount=5, twitter_id='42', receiver=self.guy1,
+                  sender=self.guy2, date=datetime.now())
         self.assertRaises(ValidationError, t.save)
+
+    def test_invalid_amounts(self):
+        amounts = settings.UPKARMA_SETTINGS['valid_amount_range']
+
+        t = Tweet(twitter_id='42', receiver=self.guy1,
+                  sender=self.guy2, date=datetime.now())
+        # not enough
+        t.amount = amounts[0]-1
+        self.assertRaises(ValidationError, t.save)
+
+        # too many
+        t.amount = amounts[1]+1
+        self.assertRaises(ValidationError, t.save)
+
+    def test_per_week_limit(self):
+        limit = settings.UPKARMA_SETTINGS['limits']['per_week']
+        max_amount = settings.UPKARMA_SETTINGS['valid_amount_range'][1]
+
+        # we need some users
+        # so we don't hit the per_week_receiver
+
+        guys = [User.objects.create(screen_name=str(i), twitter_id=str(i))
+                for i in range(limit//max_amount)]
+
+        for i in range(limit//max_amount):
+            # we fill up the per week limit
+            t = Tweet(amount=max_amount, twitter_id=str(i),
+                      sender=self.guy1, receiver=guys[i],
+                      date=datetime.now())
+            t.save()
+
+        t = Tweet(amount=max_amount, twitter_id='42',
+                  sender=self.guy1, receiver=self.guy2,
+                  date=datetime.now())
+        self.assertRaises(ValidationError, t.save)
+
+    def test_per_week_receiver_limit(self):
+        limit = settings.UPKARMA_SETTINGS['limits']['per_week_receiver']
+        max_amount = settings.UPKARMA_SETTINGS['valid_amount_range'][1]
+
+        for i in range(limit//max_amount):
+            t = Tweet(amount=max_amount, twitter_id=str(i),
+                      sender=self.guy1, receiver=self.guy2,
+                      date=datetime.now())
+            t.save()
+
+        t = Tweet(amount=max_amount, twitter_id='42',
+                  sender=self.guy1, receiver=self.guy2,
+                  date=datetime.now())
+        self.assertRaises(ValidationError, t.save)
+
+
 
 class TweetbackTest(TestCase):
     @httpretty.activate
@@ -161,5 +219,3 @@ class TweetbackTest(TestCase):
 
         self.assertEquals(get_req_arg('status'), "@guy1 You're a wizard, Harry")
         self.assertEquals(get_req_arg('in_reply_to_status_id'), str(t['id']))
-
-

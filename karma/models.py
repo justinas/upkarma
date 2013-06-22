@@ -1,7 +1,10 @@
 #encoding=utf8
+from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Sum
 from django.contrib.auth.models import AbstractBaseUser
+
 from .utils import get_global_client, get_week_start
 from .exceptions import SenderBanned, ReceiverBanned
 
@@ -86,6 +89,34 @@ class Tweet(models.Model):
         if self.receiver.banned:
             raise ReceiverBanned(u'Vartotojas, kuriam siunčiate karmos'
                     u' buvo pašalintas iš žaidimo')
+
+        # amount check
+        amounts = settings.UPKARMA_SETTINGS['valid_amount_range']
+
+        if self.amount < amounts[0] or self.amount > amounts[1]:
+            msg = (u'Netinkamas taškų kiekis. Viena žinute galima' \
+                  u' duoti nuo {0} iki {1} tšk.').format(*amounts)
+            raise ValidationError(msg)
+
+        self.clean_limits()
+
+    def clean_limits(self):
+        usage = self.sender.get_limit_usage(receiver=self.receiver)
+        limits = settings.UPKARMA_SETTINGS['limits']
+
+        left = limits['per_week'] - usage['per_week']
+        if left < self.amount:
+            msg = (u'Nepakankamas savaitės taškų limitas.' \
+                  u' Šią savaitę jums liko {0} tšk.').format(left)
+            raise ValidationError(msg)
+
+        left = limits['per_week_receiver'] - usage['per_week_receiver']
+
+        if left < self.amount:
+            msg = (u'Nepakankamas savaitės taškų limitas šiam asmeniui.' \
+                   u' Šią savaitę jam dar galite duoti {0} tšk.').format(left)
+            raise ValidationError(msg)
+
 
     def save(self, skip_checks=False, **kwargs):
         """
