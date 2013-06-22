@@ -4,14 +4,17 @@ import sys
 from mock import Mock, patch, MagicMock
 import httpretty
 
+from django.conf import settings
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 
-from .core import process_tweet, process_or_tweetback, catchup_tweets
+from .core import Bot
+from ..stream import TwitterStream
 from ..models import User, Tweet
 from ..exceptions import BadFormat
-from ..tests import get_req_arg, get_base_tweet
-from ..utils import flatten_qs
+from ..tests import get_req_arg, get_base_tweet, ht
+from ..utils import flatten_qs, get_redis_client
+
 
 USER_INFO_BLOB = """
 {
@@ -51,20 +54,22 @@ SEARCH_BLOBS = [
 
 
 class BotFormatHandlingTest(TestCase):
+    def setUp(self):
+        self.bot = Bot()
     def test_bot_fails_on_missing_amount(self):
         t = get_base_tweet()
-        t['text'] = '#upkarma @guy2'
-        self.assertRaises(BadFormat, process_tweet, t)
+        t['text'] = ht('  @guy2')
+        self.assertRaises(BadFormat, self.bot.process_tweet, t)
 
     def test_bot_fails_on_no_mentions(self):
         t = get_base_tweet()
-        t['text'] = '#upkarma 1'
+        t['text'] = ht('  1')
         t['entities']['user_mentions'] = []
-        self.assertRaises(BadFormat, process_tweet, t)
+        self.assertRaises(BadFormat, self.bot.process_tweet, t)
 
     def test_bot_fails_on_too_many_mentions(self):
         t = get_base_tweet()
-        t['text'] = '#upkarma 1 @abc @def #ghi'
+        t['text'] = ht('  1 @abc @def #ghi')
         mention = {"name":"Twitter API", "indices":[4,15],
                    "screen_name":"twitterapi", "id":6253282,
                    "id_str":"6253282"}
@@ -73,14 +78,16 @@ class BotFormatHandlingTest(TestCase):
         t['entities']['user_mentions'].append(mention)
         t['entities']['user_mentions'].append(mention)
 
-        self.assertRaises(BadFormat, process_tweet, t)
+        self.assertRaises(BadFormat, self.bot.process_tweet, t)
 
     def test_bot_extracts_amount_correctly(self):
         t = get_base_tweet()
-        t['text'] = '#upkarma 3 @guy1'
+        t['text'] = ht('  3 @guy1')
 
 class BotUserFindingTest(TestCase):
     def setUp(self):
+        self.bot = Bot()
+
         self.guy1 = User.objects.create(screen_name='guy1', twitter_id='1')
         self.guy2 = User.objects.create(screen_name='guy2', twitter_id='2')
 
@@ -104,7 +111,7 @@ class BotUserFindingTest(TestCase):
     def test_non_existant_sender(self):
         t = get_base_tweet()
         t['user']['id_str'] = '42'
-        self.assertRaises(User.DoesNotExist, process_tweet, t)
+        self.assertRaises(User.DoesNotExist, self.bot.process_tweet, t)
 
     def test_non_existant_receiver(self):
         """
@@ -116,7 +123,7 @@ class BotUserFindingTest(TestCase):
         t['entities']['user_mentions'][0]['id_str'] = '3'
         t['entities']['user_mentions'][0]['id'] = 3
 
-        process_tweet(t)
+        self.bot.process_tweet(t)
         self.assertTrue(self.fti_mock.called)
         self.assertEquals(User.objects.count(), 3)
         self.assertEquals(Tweet.objects.count(), 1)
@@ -131,15 +138,17 @@ class BotUserFindingTest(TestCase):
 
         self.guy1.banned = True
         self.guy1.save()
-        self.assertRaises(ValidationError, process_tweet, get_base_tweet())
+        self.assertRaises(ValidationError, self.bot.process_tweet, get_base_tweet())
 
     def test_receiver_banned(self):
         self.guy2.banned = True
         self.guy2.save()
-        self.assertRaises(ValidationError, process_tweet, get_base_tweet())
+        self.assertRaises(ValidationError, self.bot.process_tweet, get_base_tweet())
 
 class ProcessOrTweetbackTest(TestCase):
     def setUp(self):
+        self.bot = Bot()
+
         self.guy1 = User.objects.create(screen_name='guy1', twitter_id='1')
         self.guy2 = User.objects.create(screen_name='guy2', twitter_id='2')
 
@@ -149,7 +158,7 @@ class ProcessOrTweetbackTest(TestCase):
 
     def test_doesnt_tweetback_on_sucess(self):
         twb = Mock('karma.utils.tweetback')
-        process_or_tweetback(get_base_tweet())
+        self.bot.process_or_tweetback(get_base_tweet())
         self.assertFalse(twb.called)
 
     @httpretty.activate
@@ -159,28 +168,28 @@ class ProcessOrTweetbackTest(TestCase):
                                body=json.dumps('{}'))
         # BadFormat
         t = get_base_tweet()
-        t['text'] = '#upkarma'
+        t['text'] = ht(' ')
 
-        process_or_tweetback(t)
+        self.bot.process_or_tweetback(t)
         self.assertTrue(get_req_arg('status').startswith(u'@guy1 Nenurodyta'))
 
         # User.DoesNotExist
         t = get_base_tweet()
         t['user']['id_str'] = '12435'
-        process_or_tweetback(t)
+        self.bot.process_or_tweetback(t)
         self.assertTrue(get_req_arg('status').startswith(u'@guy1 Jūs dar'))
 
         # ValidationError
         self.guy1.banned = True
         self.guy1.save()
         t = get_base_tweet()
-        process_or_tweetback(t)
+        self.bot.process_or_tweetback(t)
         self.assertTrue(get_req_arg('status').startswith(u'@guy1 Jūs buvote'))
 
 class CatchupTest(TestCase):
     def setUp(self):
-        self.redis = Mock('karma.utils.get_redis_client',
-                return_value=MagicMock())
+        self.bot = Bot()
+        self.bot.red = MagicMock()
 
     @httpretty.activate
     def test_finds_all_tweets(self):
@@ -191,10 +200,74 @@ class CatchupTest(TestCase):
                     httpretty.Response(body=SEARCH_BLOBS[1], status=200)
                 ])
 
-        tweets = catchup_tweets(0)
+        tweets = self.bot.catchup_tweets(0)
         self.assertEquals(len(tweets), 4)
 
         requests = httpretty.HTTPretty.latest_requests
         self.assertEquals(len(requests), 2)
 
         self.assertEquals(flatten_qs(requests[1].querystring)['max_id'], '2')
+"""
+        tweet = get_base_tweet()
+        tweet['id'] = 1000
+        tweet['id_str'] = '1000'
+
+
+        tweet2 = get_base_tweet()
+        tweet2['id'] = 1500
+        tweet2['id_str'] = '1500'
+
+        httpretty.register_uri(httpretty.POST, TwitterStream.URL,
+                               streaming=True,
+                               body=[json.dumps(tweet), '\r\n',
+                                     json.dumps(tweet2), '\r\n'])
+        # catchup
+        httpretty.register_uri(httpretty.GET,
+                'https://api.twitter.com/1.1/search/tweets.json',
+                responses=[
+                    httpretty.Response(body=SEARCH_BLOBS[0], status=200),
+                    httpretty.Response(body=SEARCH_BLOBS[1], status=200)
+                ])
+"""
+
+class BotRedisTest(TestCase):
+    def setUp(self):
+        self.bot = Bot()
+        self.bot.catchup_tweets = Mock(return_value=[{'id_str' : '2'},
+                                                     {'id_str' : '4'}])
+        self.bot.process_or_tweetback = MagicMock()
+        self.bot.red = self.redis = MagicMock()
+
+        ### httpretty
+
+        tweet = get_base_tweet()
+        tweet['id_str'] = '1234'
+        tweet_body = json.dumps(tweet)
+
+        httpretty.register_uri(httpretty.POST, TwitterStream.URL,
+                               streaming=True,
+                               body=[tweet_body, '\r\n'])
+        httpretty.enable()
+
+    def tearDown(self):
+        httpretty.disable()
+
+    def test_records_on_catchup(self):
+        self.bot.catchup(0)
+        sadd = self.redis.sadd
+        _set = self.redis.set
+
+        sadd.assert_any_call('processed_ids', '2')
+        sadd.assert_any_call('processed_ids', '4')
+
+        _set.assert_any_call('max_id', '2')
+        _set.assert_any_call('max_id', '4')
+
+    def test_records_on_run(self):
+        self.bot.run(0)
+
+        sadd = self.redis.sadd
+        _set = self.redis.set
+
+        sadd.assert_any_call('processed_ids', '1234')
+        _set.assert_any_call('max_id', '1234')
