@@ -150,7 +150,12 @@ class Bot(object):
         try:
             receiver = User.objects.get(twitter_id=receiver_data['id_str'])
         except User.DoesNotExist:
-            receiver = User.from_twitter_id(receiver_data['id_str'])
+            try:
+                receiver = User.from_twitter_id(receiver_data['id_str'])
+            except TwitterHTTPError as e:
+                if e.e.getcode() == 404:
+                    # well, user has been deleted
+                    raise BadFormat(u'Vartotojas nerastas.')
 
         try:
             t = Tweet(receiver=receiver, sender=sender, amount=amount,

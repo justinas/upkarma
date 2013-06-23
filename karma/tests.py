@@ -128,7 +128,47 @@ class UserModelTest(TestCase):
         self.assertEquals(usage['per_week'], 5)
         self.assertEquals(usage['per_week_receiver'], 0)
 
+    @httpretty.activate
+    def test_renames_on_screen_name_clash(self):
+        info_blob = """
+        {
+        "profile_image_url":
+            "http://a0.twimg.com/profile_images/1777569006/image1327396628_normal.png",
+        "id_str": "1",
+        "profile_image_url_https":
+            "https://si0.twimg.com/profile_images/1777569006/image1327396628_normal.png",
+        "id": 1,
+        "screen_name": "donkey"
+        }
+        """
 
+        # guy1 renames himself to `donkey`
+        httpretty.register_uri(httpretty.GET,
+                               'https://api.twitter.com/1.1/users/show.json',
+                               body=info_blob)
+
+        # a new user named `guy1` appears
+        u = User(screen_name='guy1', twitter_id='42')
+        u.save()
+
+        prev_guy1 = User.objects.get(twitter_id='1')
+
+        # guy1 is renamed to donkey
+        self.assertEquals(prev_guy1.screen_name, 'donkey')
+
+    @httpretty.activate
+    def test_deletes_on_screen_name_clash_if_404(self):
+        # original guy 1 doesn't exist anymore
+        httpretty.register_uri(httpretty.GET,
+                               'https://api.twitter.com/1.1/users/show.json',
+                               status=404)
+
+        # a new user named `guy1` appears
+        u = User(screen_name='guy1', twitter_id='42')
+        u.save()
+
+        with self.assertRaises(User.DoesNotExist):
+            User.objects.get(twitter_id='1')
 
 class TweetModelTest(TestCase):
     def setUp(self):

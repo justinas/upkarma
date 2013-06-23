@@ -5,6 +5,8 @@ from django.db import models
 from django.db.models import Sum
 from django.contrib.auth.models import AbstractBaseUser
 
+from twitter import TwitterHTTPError
+
 from .utils import get_global_client, get_week_start
 from .exceptions import SenderBanned, ReceiverBanned
 
@@ -24,6 +26,61 @@ class User(AbstractBaseUser):
     USERNAME_FIELD = 'screen_name'
     REQUIRED_FIELDS = ['twitter_id']
 
+    def save(self, **kwargs):
+        self.solve_screen_name_clashes()
+
+        super(User, self).save(**kwargs)
+
+    def solve_screen_name_clashes(self):
+        """
+        This method helps avoid screen name clashes
+        in situations like:
+            1. We have a user with Twitter ID 1 and screen name `guy1`
+               and another with ID 2 and screen name `guy2`
+            2. ID 2 changes his username to `donkey`
+            3. ID 1 changes his username to `guy2`
+            4. We update ID 1's info... Oops, there's already a `guy2`!
+
+        This method helps us solve those cases
+        by searching users with the same screen name
+        at the time we save this user
+        and updating their info first,
+        thus freeing the name.
+        """
+        try:
+            u = User.objects.exclude(pk=self.pk).get(screen_name=self.screen_name)
+        except User.DoesNotExist:
+            # no user by our name, carry on
+            return
+        else:
+            try:
+                u.fill_info_from_twitter()
+            except TwitterHTTPError as e:
+                if e.e.getcode() == 404:
+                    # well, user has been deleted
+                    u.delete()
+            else:
+                u.save()
+
+
+    def fill_info_from_twitter(self, twitter_id=None):
+        """
+        Fills user info from twitter.
+        Suitable for updating screen names, avatars,
+        also creating new accounts
+
+        This is useful as a general function
+        in other use cases than User.from_twitter_id()
+        """
+        if not twitter_id:
+            twitter_id = self.twitter_id
+        tw = get_global_client()
+        info = tw.users.show(user_id=twitter_id)
+
+        self.screen_name = info['screen_name']
+        self.avatar = info['profile_image_url']
+
+
     @classmethod
     def from_twitter_id(cls, twitter_id):
         """
@@ -32,12 +89,7 @@ class User(AbstractBaseUser):
         saves and returns it
         """
         u = cls()
-        tw = get_global_client()
-
-        info = tw.users.show(user_id=twitter_id)
-        u.screen_name = info['screen_name']
-        u.avatar = info['profile_image_url']
-
+        u.fill_info_from_twitter(twitter_id)
         u.save()
 
         return u
