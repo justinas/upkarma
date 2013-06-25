@@ -1,8 +1,10 @@
 from redis import StrictRedis
 from twitter import Twitter, OAuth
 from datetime import date, timedelta
+import logging
 
 from django.conf import settings
+from django.core.cache import cache
 
 from .stream import TwitterStream
 
@@ -29,6 +31,31 @@ def get_stream_client():
 def get_redis_client():
     return StrictRedis(**settings.UPKARMA_SETTINGS['redis'])
 
+def cached(key, timeout=None):
+    """
+    A decorator that either returns
+    the function result from django cache
+    according to the key if it exists there
+    or calls the function, stores the result in cache
+    and then returns it.
+
+    str.format(*args, **kwargs) is called on the cache key
+    with the arguments the function is called with
+    """
+    def decorator(func):
+        def wrap(*args, **kwargs):
+            final_key = key.format(*args, **kwargs)
+            result = cache.get(final_key)
+
+            if not result:
+                result = func(*args, **kwargs)
+                cache.set(final_key, result, timeout)
+
+            return result
+        return wrap
+
+    return decorator
+
 def get_week_start(today=None):
     if not today:
         today = date.today()
@@ -41,12 +68,19 @@ def tweetback(message, tweet):
     Replies to the author of tweet
     with a specified message
     """
+    log = logging.getLogger('karma.other')
     client = get_global_client()
     message = u'@{0} {1}'.format(tweet['user']['screen_name'], message)
+    if settings.DEBUG:
+        # Don't tweet
+        log.debug(u'Not tweeted because of DEBUG=True: '+message)
+        return
     try:
         client.statuses.update(status=message,
                             in_reply_to_status_id=tweet['id_str'])
+        log.debug(u'Tweeted: `{0}`'.format(message))
     except TwitterError as e:
         # TODO: log
+        log.error(u'Tweet `{0}` failed with an exception:\n{1}'.format(message,e))
         pass
 

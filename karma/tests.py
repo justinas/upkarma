@@ -5,6 +5,7 @@ from datetime import datetime
 from django.conf import settings
 from django.test import TestCase
 from django.core.exceptions import ValidationError
+from mock import MagicMock, patch
 
 try:
     from urlparse import parse_qs
@@ -12,7 +13,7 @@ except ImportError:
     from urllib.parse import parse_qs
 
 from .models import Tweet, User
-from .utils import tweetback
+from .utils import tweetback, cached
 
 HASHTAG = settings.UPKARMA_SETTINGS['hashtag']
 
@@ -259,3 +260,47 @@ class TweetbackTest(TestCase):
 
         self.assertEquals(get_req_arg('status'), "@guy1 You're a wizard, Harry")
         self.assertEquals(get_req_arg('in_reply_to_status_id'), str(t['id']))
+
+class CachedDecoratorTest(TestCase):
+    def setUp(self):
+        self.patcher = patch('karma.utils.cache')
+        self.cache_mock = self.patcher.start()
+
+        def func(*args, **kwargs):
+            return [1,2,3]
+
+        self.func = func
+
+    def test_cache_empty(self):
+        func = cached('this-is-a-key')(self.func)
+
+        # cache is empty
+        self.cache_mock.get.return_value = None
+
+        self.assertEquals(func(), [1,2,3])
+        self.cache_mock.get.assert_called_with('this-is-a-key')
+        self.cache_mock.set.assert_called_with('this-is-a-key', [1,2,3], None)
+
+    def test_cache_not_empty(self):
+        func = cached('this-is-a-key')(self.func)
+
+        # there's a result in cache
+        self.cache_mock.get.return_value = [1,2,3]
+
+        self.assertEquals(func(), [1,2,3])
+        self.cache_mock.get.assert_called_with('this-is-a-key')
+        # set() shouldn't be called when
+        # the result is retrieved from cache
+        self.assertFalse(self.cache_mock.set.called)
+
+    def test_key_format(self):
+        # so set() is called as well
+        self.cache_mock.get.return_value = None
+
+        func = cached('key:{0}:{k}')(self.func)
+        expected_key = 'key:pos:kw'
+
+        func('pos', k='kw')
+
+        self.cache_mock.get.assert_called_with('key:pos:kw')
+        self.cache_mock.set.assert_called_with('key:pos:kw', [1,2,3], None)
