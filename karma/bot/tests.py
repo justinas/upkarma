@@ -238,6 +238,9 @@ class BotRedisTest(TestCase):
         self.bot.process_or_tweetback = MagicMock()
         self.bot.red = self.redis = MagicMock()
 
+        # so bot never skips tweets as already processed
+        self.redis.sismember.return_value = False
+
         ### httpretty
 
         tweet = get_base_tweet()

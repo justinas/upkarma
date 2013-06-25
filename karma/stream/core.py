@@ -6,7 +6,7 @@ from requests_oauthlib import OAuth1Session
 from twitter import TwitterError
 
 class TwitterStream(object):
-    URL = 'https://dev.twitter.com/docs/api/1.1/post/statuses/filter'
+    URL = 'https://stream.twitter.com/1.1/statuses/filter.json'
     def __init__(self, consumer_key, consumer_secret,
                  token, token_secret):
         """

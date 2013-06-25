@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import re
 from datetime import datetime
+import logging
 
 try:
     from urlparse import parse_qs
@@ -23,11 +24,17 @@ def parse_date(str):
 class Bot(object):
     def __init__(self):
         self.red = get_redis_client()
+        self.log = logging.getLogger('karma.bot')
 
     def catchup(self, max_id):
         try:
             tweets = self.catchup_tweets(max_id)
+            self.log.debug(u'Tweets to catch up with: {0}'.format(
+                [t['id_str'] for t in tweets]))
             for t in tweets:
+                # skip processed tweets
+                if self.red.sismember('processed_ids', t['id_str']):
+                    continue
                 self.process_or_tweetback(t)
                 self.record_processed_id(t['id_str'])
                 self.record_max_id(t['id_str'])
@@ -40,13 +47,23 @@ class Bot(object):
         Catches up with the tweets,
         then processes the tweet stream infinitely
         """
+        self.log.debug(u'Catching up with tweets since {0}'.format(max_id))
         self.catchup(max_id)
+
+        self.log.debug(u'Done catching up')
+
         client = get_stream_client()
+
+        self.log.debug(u'Starting the stream')
         try:
             stream = client.statuses_filter(
                 track=settings.UPKARMA_SETTINGS['hashtag']
             )
             for t in stream:
+                self.log.debug(u'A new tweet on stream: {0}'.format(t['id']))
+                # skip processed tweets
+                if self.red.sismember('processed_ids', t['id_str']):
+                    continue
                 self.process_or_tweetback(t)
                 self.record_processed_id(t['id_str'])
                 self.record_max_id(t['id_str'])
@@ -54,9 +71,11 @@ class Bot(object):
             raise
 
     def record_processed_id(self, id):
+        self.log.debug('Added to processed_ids: {0}'.format(id))
         self.red.sadd('processed_ids', id)
 
     def record_max_id(self, id):
+        self.log.error('New max_id: {0}'.format(id))
         self.red.set('max_id', id)
 
     def catchup_tweets(self, since_id):
@@ -67,7 +86,8 @@ class Bot(object):
         tw = get_global_client()
         tweets = []
         args = dict(q=settings.UPKARMA_SETTINGS['hashtag'], count=100,
-                    result_type='recent', include_entities=1)
+                    result_type='recent', include_entities=1,
+                    since_id=since_id)
 
         # fetch the tweets into a list
         while True:
@@ -92,6 +112,7 @@ class Bot(object):
         tweetsback at the user
         with the error message
         """
+        self.log.debug(u'process_or_tweetback() id {0}'.format(tweet['id_str']))
         try:
             self.process_tweet(tweet)
             # no error, nothing to do here
