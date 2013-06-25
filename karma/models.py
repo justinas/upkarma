@@ -79,6 +79,7 @@ class User(AbstractBaseUser):
 
         self.screen_name = info['screen_name']
         self.avatar = info['profile_image_url']
+        self.twitter_id = info['id_str']
 
 
     @classmethod
