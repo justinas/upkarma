@@ -80,8 +80,9 @@ INSTALLED_APPS = (
 )
 
 # let's put it in the container folder and not the project folder itself
-IMPORTER_LOG_FILENAME = os.path.join(DIRNAME, '..',
-                                     'karma_importer.log')
+IMPORTER_LOG_FILENAME = os.path.join(DIRNAME, '..', 'karma_importer.log')
+BOT_LOG_FILENAME = os.path.join(DIRNAME, '..', 'karma_bot.log')
+OTHER_LOG_FILENAME = os.path.join(DIRNAME, '..', 'karma_other.log')
 
 LOGGING = {
     'version': 1,
@@ -98,11 +99,23 @@ LOGGING = {
             'filters': ['require_debug_false'],
         },
         'log_importer': {
-            'level' : 'INFO',
+            'level' : 'DEBUG',
             'class' : 'logging.FileHandler',
             'formatter' : 'simple',
             'filename' : IMPORTER_LOG_FILENAME,
-        }
+        },
+        'log_bot' : {
+            'level' : 'DEBUG',
+            'class' : 'logging.FileHandler',
+            'formatter' : 'simple',
+            'filename' : BOT_LOG_FILENAME,
+        },
+        'log_other' : {
+            'level' : 'DEBUG',
+            'class' : 'logging.FileHandler',
+            'formatter' : 'simple',
+            'filename' : OTHER_LOG_FILENAME,
+        },
     },
     'filters': {
         'require_debug_false': {
@@ -117,9 +130,17 @@ LOGGING = {
         },
         'karma.importer' : {
             'handlers' : ['log_importer'],
-            'level' : 'INFO',
-        }
-    }
+            'level' : 'DEBUG',
+        },
+        'karma.bot' : {
+            'handlers' : ['log_bot'],
+            'level' : 'DEBUG',
+        },
+        'karma.other' : {
+            'handlers' : ['log_other'],
+            'level' : 'DEBUG',
+        },
+    },
 }
 
 UPKARMA_SETTINGS = {
