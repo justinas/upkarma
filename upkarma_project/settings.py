@@ -25,7 +25,7 @@ USE_L10N = True
 MEDIA_ROOT = ''
 MEDIA_URL = ''
 
-STATIC_ROOT = ''
+STATIC_ROOT = os.path.join(DIRNAME, '..', 'static')
 STATIC_URL = '/static/'
 
 ADMIN_MEDIA_PREFIX = '/static/admin/'
@@ -78,6 +78,7 @@ INSTALLED_APPS = (
     'karma.importer',
     'karma.bot',
     'karma.stream',
+    'karma_design',
 )
 
 # let's put it in the container folder and not the project folder itself
