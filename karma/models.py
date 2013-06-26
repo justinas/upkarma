@@ -19,8 +19,6 @@ class User(AbstractBaseUser):
         default=0,
         null=False,
     )
-    # denormalized field for storing the point amount
-    points = models.IntegerField(default=0)
 
     # django auth thingies
     USERNAME_FIELD = 'screen_name'
