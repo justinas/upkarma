@@ -40,3 +40,8 @@ local_settings.py
 *.log
 *.swp
 ./static/
+bootstrap.css
+bootstrap.min.css
+bootstrap.min.js
+bootstrap-responsive.css
+bootstrap-responsive.min.css
