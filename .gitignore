@@ -39,3 +39,4 @@ nosetests.xml
 local_settings.py
 *.log
 *.swp
+static/
