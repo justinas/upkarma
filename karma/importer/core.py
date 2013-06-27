@@ -1,5 +1,9 @@
 import json
 import logging
+
+from django.core.management.color import no_style
+from django.db import connection
+
 from karma.models import User, Tweet
 from datetime import datetime
 
@@ -42,5 +46,15 @@ def import_from_dump(blob, silent=False):
 
         else:
             raise AssertionError("This shouldn't happen")
+
+    # fast-forward sequences to start at max(id)
+    # based on loaddata
+    sql = connection.ops.sequence_reset_sql(no_style(), [Tweet, User])
+    cursor = connection.cursor()
+
+    for line in sql:
+        cursor.execute(line)
+
+    cursor.close()
 
     log.info('Import finished')
