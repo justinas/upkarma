@@ -3,6 +3,7 @@ import logging
 
 from django.core.management.color import no_style
 from django.db import connection
+from django.db import transaction
 
 from karma.models import User, Tweet
 from datetime import datetime
@@ -11,6 +12,7 @@ DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
 log = logging.getLogger('karma.importer')
 
+@transaction.commit_on_success
 def import_from_dump(blob, silent=False):
     """Takes a JSON blob from a dumpdata file from the old upkarma
     and imports the Tweets and Users from that"""
