@@ -70,15 +70,14 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Uncomment the next line to enable the admin:
-    # 'django.contrib.admin',
+    'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
-    # 'django.contrib.admindocs',
+    'django.contrib.admindocs',
     'south',
     'karma',
     'karma.importer',
     'karma.bot',
     'karma.stream',
-    'karma_design',
 )
 
 # let's put it in the container folder and not the project folder itself
@@ -158,8 +157,9 @@ UPKARMA_SETTINGS = {
     },
     'hashtag' : '#upkarma',
     # the hashtag, followed by one or more whitespace symbols,
+    # followed by zero or one plus
     # followed by a digit that is not followed by a digit
-    're_amount' : re.compile(r'#upkarma\s+(\d)(?!\d)'),
+    're_amount' : re.compile(r'#upkarma\s+\+?(\d)(?!\d)'),
     'limits' : {
         'per_week' : 50,
         'per_week_receiver' : 15
