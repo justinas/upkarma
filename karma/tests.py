@@ -171,6 +171,15 @@ class UserModelTest(TestCase):
         with self.assertRaises(User.DoesNotExist):
             User.objects.get(twitter_id='1')
 
+    def test_get_position(self):
+        Tweet(receiver=self.guy1, sender=self.guy2, twitter_id='1',
+              amount=5, date=datetime.now()).save()
+        Tweet(receiver=self.guy2, sender=self.guy1, twitter_id='1',
+              amount=1, date=datetime.now()).save()
+
+        self.assertEquals(self.guy1.get_position(), 1)
+        self.assertEquals(self.guy2.get_position(), 2)
+
 class TweetModelTest(TestCase):
     def setUp(self):
         self.guy1 = User.objects.create(screen_name='guy1', twitter_id='1')

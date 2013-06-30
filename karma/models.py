@@ -32,6 +32,21 @@ class User(AbstractBaseUser):
 
         super(User, self).save(**kwargs)
 
+    def get_position(self, qs=None):
+        """
+        Returns user's position in the given queryset
+        or the global top if qs is None
+        """
+        if qs is None:
+            qs = User.objects.top()
+
+        # position starts at 1
+        for i, u in enumerate(qs, 1):
+            if u.pk == self.pk:
+                return i
+
+        return None
+
     def solve_screen_name_clashes(self):
         """
         This method helps avoid screen name clashes
