@@ -21,6 +21,7 @@ def import_from_dump(blob, silent=False):
     for obj in objects:
         if obj['model'] == 'karma.user':
             u = User()
+            u.avatar = obj['fields']['avatar']
             u.screen_name = obj['fields']['username']
             u.twitter_id = obj['fields']['twitter_id']
             u.banned = obj['fields']['banned']
