@@ -2,6 +2,10 @@ from django.db import models
 from django.db.models import Sum
 
 class UserManager(models.Manager):
+    def get_query_set(self):
+        qs = super(UserManager, self).get_query_set()
+        return qs.exclude(banned=True)
+
     def with_points(self):
         qs = self.get_query_set()
         return qs.annotate(points=Sum('karma_receives__amount'))
@@ -9,7 +13,6 @@ class UserManager(models.Manager):
     def with_points_sent(self):
         qs = self.get_query_set()
         return qs.annotate(points_sent=Sum('karma_sends__amount'))
-
 
     def top(self):
         qs = self.with_points()
