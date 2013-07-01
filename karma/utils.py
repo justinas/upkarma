@@ -44,10 +44,11 @@ def cached(key, timeout=None):
     """
     def decorator(func):
         def wrap(*args, **kwargs):
+            _bypass_cache = kwargs.pop('_bypass_cache', False)
             final_key = key.format(*args, **kwargs)
             result = cache.get(final_key)
 
-            if not result:
+            if (not result) or _bypass_cache:
                 result = func(*args, **kwargs)
                 cache.set(final_key, result, timeout)
 
