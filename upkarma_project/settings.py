@@ -15,6 +15,8 @@ MANAGERS = ADMINS
 AUTH_USER_MODEL = 'karma.User'
 
 TIME_ZONE = 'GMT'
+USE_TZ = True
+
 LANGUAGE_CODE = 'lt-LT'
 
 SITE_ID = 1
