@@ -4,6 +4,7 @@ import logging
 from django.core.management.color import no_style
 from django.db import connection
 from django.db import transaction
+from django.utils.timezone import utc
 
 from karma.models import User, Tweet
 from datetime import datetime
@@ -43,7 +44,10 @@ def import_from_dump(blob, silent=False):
             t.text = obj['fields']['text']
             t.twitter_id = obj['fields']['twitter_id']
             t.pk = obj['pk']
-            t.date = datetime.strptime(obj['fields']['date'], DATE_FORMAT)
+
+            date = datetime.strptime(obj['fields']['date'], DATE_FORMAT)
+            t.date = date.replace(tzinfo=utc)
+
             t.save(skip_checks=True)
             log.info('{0} saved'.format(t))
 

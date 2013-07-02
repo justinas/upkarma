@@ -3,6 +3,7 @@ from datetime import datetime
 from django.conf import settings
 from django.test import TestCase
 from django.db.models import Sum
+from django.utils.timezone import utc
 
 from .core import import_from_dump
 from ..models import Tweet, User
@@ -107,7 +108,8 @@ class ImporterTestCase(TestCase):
         self.assertEquals(t1.amount, 5)
         self.assertEquals(t2.amount, 1)
 
-        self.assertEquals(t1.date, datetime(2011, 11, 26, 14, 17, 18))
+        self.assertEquals(t1.date,
+                          datetime(2011, 11, 26, 14, 17, 18).replace(tzinfo=utc))
         self.assertEquals(t1.text, ht(" 5 @cool_guy"))
 
         cnt1 = User.objects.filter(pk=1).aggregate(
