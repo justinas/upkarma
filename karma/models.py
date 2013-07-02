@@ -1,6 +1,7 @@
 #encoding=utf8
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db import connection
 from django.db import models
 from django.db.models import Sum
 from django.contrib.auth.models import AbstractBaseUser
@@ -31,6 +32,35 @@ class User(AbstractBaseUser):
         self.solve_screen_name_clashes()
 
         super(User, self).save(**kwargs)
+
+    def get_monthly_point_history(self):
+        """
+        Returns user's point history
+        as cumulative sums of every month
+        in form of two-tuples
+        ('YYYY-MM', sum)
+        """
+
+        query = """
+        -- integer cast is needed
+        -- for Python to not return Decimals
+        -- we don't really need
+        SELECT month, SUM("sum"::integer) OVER (ORDER BY "month") FROM
+
+        (SELECT to_char(date, 'YYYY-MM') as month, SUM(t.amount) as "sum"
+        FROM karma_tweet t
+        JOIN karma_user u ON t.receiver_id = u.id
+        WHERE u.id = %s
+        GROUP BY month
+        ORDER BY month) t
+        """
+
+        cursor = connection.cursor()
+
+        cursor.execute(query, [self.id])
+        rows = cursor.fetchall()
+
+        return rows
 
     def get_position(self, qs=None):
         """
