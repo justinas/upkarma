@@ -10,6 +10,7 @@ except ImportError:
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.utils.timezone import utc
 
 from ..exceptions import BadFormat
 from ..models import User, Tweet
@@ -19,7 +20,9 @@ from ..utils import (tweetback, get_redis_client, get_global_client,
 DATE_FORMAT = '%a %b %d %H:%M:%S +0000 %Y'
 
 def parse_date(str):
-    return datetime.strptime(str, DATE_FORMAT)
+    d = datetime.strptime(str, DATE_FORMAT)
+    d = d.replace(tzinfo=utc)
+    return d
 
 class Bot(object):
     def __init__(self):

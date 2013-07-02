@@ -9,6 +9,7 @@ ipython==0.13.2
 mock==1.0.1
 oauthlib==0.4.2
 psycopg2==2.5
+pytz==2013b
 redis==2.7.6
 requests==1.2.3
 requests-oauthlib==0.3.2
