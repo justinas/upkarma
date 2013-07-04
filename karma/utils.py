@@ -1,12 +1,23 @@
 from redis import StrictRedis
 from twitter import Twitter, OAuth
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
+from time import mktime
 import logging
 
 from django.conf import settings
 from django.core.cache import cache
 
 from .stream import TwitterStream
+
+def ym_to_js_timestamp(string):
+    y, m = (int(i) for i in string.split('-'))
+    dt = datetime(y, m, 1)
+
+    unix = mktime(dt.timetuple())
+    # JavaScript counts in milliseconds
+    unix *= 1000
+
+    return unix
 
 def flatten_qs(qs):
     """
