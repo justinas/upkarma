@@ -30,8 +30,8 @@ def get_user_context(name):
         qs = User.objects.exclude(banned=True)
 
         user = qs.get(screen_name__iexact=name)
-        points = user.karma_receives.aggregate(s=Sum('amount'))['s']
-        points_sent = user.karma_sends.aggregate(s=Sum('amount'))['s']
+        points = user.karma_receives.aggregate(s=Sum('amount'))['s'] or 0
+        points_sent = user.karma_sends.aggregate(s=Sum('amount'))['s'] or 0
         monthly_history = [
             (ym_to_js_timestamp(i[0]), i[1])
             for i in user.get_monthly_point_history()
