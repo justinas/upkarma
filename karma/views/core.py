@@ -22,8 +22,10 @@ def index(request):
     except (PageNotAnInteger, EmptyPage):
         return HttpResponseRedirect(reverse('karma.views.index'))
 
-    return render_to_response('karma/index.html',
-                              {'user_top' : page.object_list, 'page' : page})
+    context = dict(user_top=page.object_list, page=page,
+                   active_page='index')
+
+    return render_to_response('karma/index.html', context)
 
 def get_user_context(name):
     try:
