@@ -52,3 +52,33 @@ def get_user_context(name):
 def user(request, name):
     context = get_user_context(name)
     return render_to_response('karma/user.html', context)
+
+def search(request):
+    try:
+        query = request.GET['q']
+    except KeyError:
+        return HttpResponseRedirect(reverse('karma.views.index'))
+
+    qs = User.objects.filter(screen_name__icontains=query)
+
+    if len(qs) == 1:
+        return HttpResponseRedirect(reverse('karma.views.user',
+                                            qs[0].screen_name))
+
+    paginator = Paginator(qs, PER_PAGE)
+
+    try:
+        page_number = request.GET.get('page', 1)
+        page = paginator.page(page_number)
+
+    except (PageNotAnInteger, EmptyPage):
+        return HttpResponseRedirect(reverse('karma.views.index'))
+
+    # group these in pairs
+    page.object_list = [page.object_list[i:i+2]
+                        for i in range(0, len(page.object_list), 2)]
+
+    context = dict(page=page, results=qs, query=query)
+
+    return render_to_response('karma/search_results.html', context)
+
