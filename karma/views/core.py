@@ -11,6 +11,7 @@ from karma.models import User
 from karma.utils import cached, ym_to_js_timestamp
 
 PER_PAGE = 50
+SEARCH_PER_PAGE = 30
 
 def index(request):
     top = User.objects.top()
@@ -63,9 +64,9 @@ def search(request):
 
     if len(qs) == 1:
         return HttpResponseRedirect(reverse('karma.views.user',
-                                            qs[0].screen_name))
+                                            args=(qs[0].screen_name,)))
 
-    paginator = Paginator(qs, PER_PAGE)
+    paginator = Paginator(qs, SEARCH_PER_PAGE)
 
     try:
         page_number = request.GET.get('page', 1)
