@@ -72,7 +72,13 @@ def search(request):
         page_number = request.GET.get('page', 1)
         page = paginator.page(page_number)
 
-    except (PageNotAnInteger, EmptyPage):
+    except EmptyPage:
+        if page_number == 1:
+            pass
+        else:
+            return HttpResponseRedirect(reverse('karma.views.index'))
+
+    except PageNotAnInteger:
         return HttpResponseRedirect(reverse('karma.views.index'))
 
     # group these in pairs
