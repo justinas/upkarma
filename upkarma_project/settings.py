@@ -82,6 +82,8 @@ INSTALLED_APPS = (
     'karma.stream',
 )
 
+TEST_RUNNER = 'karma.test_runner.KarmaTestRunner'
+
 # let's put it in the container folder and not the project folder itself
 IMPORTER_LOG_FILENAME = os.path.join(DIRNAME, '..', 'karma_importer.log')
 BOT_LOG_FILENAME = os.path.join(DIRNAME, '..', 'karma_bot.log')
