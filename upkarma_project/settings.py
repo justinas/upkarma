@@ -13,6 +13,7 @@ ADMINS = (
 MANAGERS = ADMINS
 
 AUTH_USER_MODEL = 'karma.User'
+AUTHENTICATION_BACKENDS = ('karma.auth.TwitterBackend',)
 
 TIME_ZONE = 'GMT'
 USE_TZ = True
@@ -171,7 +172,8 @@ UPKARMA_SETTINGS = {
     'valid_amount_range' : (1,5),
     # passed to StrictRedis constructor
     'redis' : {
-    }
+    },
+    'callback_uri' : 'http://dummy/'
 }
 
 try:
