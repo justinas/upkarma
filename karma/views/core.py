@@ -8,6 +8,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
 
 from karma.models import User
+from karma.stats import all_stats
 from karma.utils import cached, ym_to_js_timestamp
 
 PER_PAGE = 50
@@ -54,6 +55,11 @@ def user(request, name):
     context = get_user_context(name)
     return render_to_response('karma/user.html', context)
 
+def stats(request):
+    context = all_stats()
+
+    return render_to_response('karma/stats.html', context)
+
 def search(request):
     try:
         query = request.GET['q']
@@ -84,7 +90,6 @@ def search(request):
     # group these in pairs
     page.object_list = [page.object_list[i:i+2]
                         for i in range(0, len(page.object_list), 2)]
-
     context = dict(page=page, results=qs, query=query)
 
     return render_to_response('karma/search_results.html', context)
