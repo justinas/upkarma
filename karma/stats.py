@@ -31,6 +31,46 @@ def minutes_between_sends():
 
     return minutes / total_times_sent()
 
+def amount_by_dow():
+    """
+    Returns a list of (dow, amount) tuples
+    where `dow` is the day of week (1 to 7, Mon to Sun)
+    and `amount` is the amount of karma sent on that dow
+    """
+    query = """
+    SELECT
+    EXTRACT(isodow FROM "date")::int as "dow",
+    SUM(amount) as amount
+    FROM karma_tweet
+    GROUP BY dow
+    ORDER BY dow ASC
+    """
+
+    cursor = connection.cursor()
+    cursor.execute(query)
+
+    return cursor.fetchall()
+
+def amount_by_month():
+    """
+    Does the same as `amount_by_dow()`, except for months.
+    """
+
+    query = """
+    SELECT
+    EXTRACT(month FROM "date")::int as "month",
+    SUM(amount) as amount
+    FROM karma_tweet
+    GROUP BY month
+    ORDER BY month ASC
+    """
+
+    cursor = connection.cursor()
+    cursor.execute(query)
+
+    return cursor.fetchall()
+
+
 def all_stats():
     results = {}
     results['total_points'] = total_points()
@@ -39,5 +79,9 @@ def all_stats():
     results['avg_per_send'] = (float(results['total_points']) /
                                results['total_times_sent'])
     results['minutes_between_sends'] = minutes_between_sends()
+
+    # for graphs
+    results['amount_by_dow'] = amount_by_dow()
+    results['amount_by_month'] = amount_by_month()
 
     return results
