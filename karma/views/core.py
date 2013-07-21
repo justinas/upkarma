@@ -58,6 +58,9 @@ def user(request, name):
 def stats(request):
     context = all_stats()
 
+    context['amount_by_month'] = json.dumps(context['amount_by_month'])
+    context['amount_by_dow'] = json.dumps(context['amount_by_dow'])
+
     return render_to_response('karma/stats.html', context)
 
 def search(request):
