@@ -10,7 +10,7 @@ from twitter import TwitterHTTPError
 
 from .utils import get_global_client, get_week_start
 from .exceptions import SenderBanned, ReceiverBanned
-from .managers import UserManager
+from .managers import UserManager, PublicUserManager
 
 class User(AbstractBaseUser):
     screen_name = models.CharField('Twitter screen name', unique=True,
@@ -27,6 +27,7 @@ class User(AbstractBaseUser):
     REQUIRED_FIELDS = ['twitter_id']
 
     objects = UserManager()
+    public = PublicUserManager()
 
     def save(self, **kwargs):
         self.solve_screen_name_clashes()
