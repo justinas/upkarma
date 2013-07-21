@@ -49,3 +49,14 @@ class UserManager(models.Manager):
     def top_sent(self):
         qs = self.with_points_sent().exclude(banned=True)
         return qs.order_by('-points').exclude(points=None)
+
+class PublicUserManager(UserManager):
+    """
+    This is the manager that gets exposed to the public.
+    While `UserManager` is suitable for internal work,
+    `PublicUserManager` should be used in views, API, etc.
+    """
+    def get_query_set(self):
+        qs = super(PublicUserManager, self).get_query_set()
+        # do not return banned users
+        return qs.filter(banned=False)
