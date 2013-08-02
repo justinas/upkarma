@@ -41,6 +41,9 @@ def callback(request):
     Exchanges the request token
     for an access token
     """
+    if not ('oauth_token' in request.GET and 'oauth_verifier' in request.GET):
+        return HttpResponseRedirect(reverse('karma.views.index'))
+
     sess = get_oauth_session(token=request.session['request_token'],
                              token_secret=request.session['request_token_secret'])
 
