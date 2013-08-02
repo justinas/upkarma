@@ -69,7 +69,7 @@ def search(request):
     try:
         query = request.GET['q']
     except KeyError:
-        return HttpResponseRedirect(reverse('karma.views.index'))
+        return render_to_response('karma/search_results.html')
 
     qs = User.objects.filter(screen_name__icontains=query)
 
