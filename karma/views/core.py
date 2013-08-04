@@ -1,5 +1,5 @@
 # Create your views here.
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.http import Http404, HttpResponseRedirect
 from django.db.models import Sum
 from django.core.urlresolvers import reverse
@@ -27,7 +27,8 @@ def index(request):
     context = dict(user_top=page.object_list, page=page,
                    active_page='index')
 
-    return render_to_response('karma/index.html', context)
+
+    return render(request, 'karma/index.html', context)
 
 def get_user_context(name):
     try:
@@ -53,7 +54,7 @@ def get_user_context(name):
 
 def user(request, name):
     context = get_user_context(name)
-    return render_to_response('karma/user.html', context)
+    return render(request, 'karma/user.html', context)
 
 def stats(request):
     context = all_stats()
@@ -63,13 +64,13 @@ def stats(request):
 
     context['active_page'] = 'stats'
 
-    return render_to_response('karma/stats.html', context)
+    return render(request, 'karma/stats.html', context)
 
 def search(request):
     try:
         query = request.GET['q']
     except KeyError:
-        return render_to_response('karma/search_results.html')
+        return render(request, 'karma/search_results.html')
 
     qs = User.objects.filter(screen_name__icontains=query)
 
@@ -97,5 +98,5 @@ def search(request):
                         for i in range(0, len(page.object_list), 2)]
     context = dict(page=page, results=qs, query=query)
 
-    return render_to_response('karma/search_results.html', context)
+    return render(request, 'karma/search_results.html', context)
 
