@@ -96,6 +96,7 @@ INSTALLED_APPS = (
     'karma.importer',
     'karma.bot',
     'karma.stream',
+    'karma.news',
 )
 
 REST_FRAMEWORK = {
