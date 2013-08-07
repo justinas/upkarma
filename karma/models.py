@@ -18,9 +18,9 @@ class User(AbstractBaseUser):
     twitter_id = models.CharField('Twitter id', max_length=255)
     avatar = models.URLField('Twitter avatar URL', blank=True)
     banned = models.BooleanField('Boolean showing if user is banned',
-        default=0,
-        null=False,
-    )
+                                 default=0, null=False)
+    admin = models.BooleanField('Boolean showing if user is an admin',
+                                default=0, null=False)
 
     # django auth thingies
     USERNAME_FIELD = 'screen_name'
@@ -33,6 +33,46 @@ class User(AbstractBaseUser):
         self.solve_screen_name_clashes()
 
         super(User, self).save(**kwargs)
+
+    @classmethod
+    def from_twitter_id(cls, twitter_id):
+        """
+        Given a user's twitter_id, creates a User,
+        prefilled with info from his twitter account,
+        saves and returns it
+        """
+        u = cls()
+        u.fill_info_from_twitter(twitter_id)
+        u.save()
+
+        return u
+
+    # these are needed for Django's admin
+    # as I stupidly did not inherit from AbstractUser
+    # but from AbstractBaseUser
+
+    # these will suffice for now
+    # (if the user is admin, we let him do anything)
+
+    @property
+    def is_staff(self):
+        return self.admin
+
+    @property
+    def is_active(self):
+        return not self.banned
+
+    def has_perm(self, perm, obj=None):
+        return self.admin
+
+    def has_module_perms(self, app_label):
+        return self.admin
+
+    def get_username(self):
+        return self.screen_name
+
+    get_short_name = get_username
+    get_full_name = get_username
 
     def get_monthly_point_history(self):
         """
@@ -128,19 +168,6 @@ class User(AbstractBaseUser):
         self.avatar = info['profile_image_url']
         self.twitter_id = info['id_str']
 
-
-    @classmethod
-    def from_twitter_id(cls, twitter_id):
-        """
-        Given a user's twitter_id, creates a User,
-        prefilled with info from his twitter account,
-        saves and returns it
-        """
-        u = cls()
-        u.fill_info_from_twitter(twitter_id)
-        u.save()
-
-        return u
 
     def get_limit_usage(self, receiver=None):
         """
