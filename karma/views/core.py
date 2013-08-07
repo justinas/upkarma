@@ -9,7 +9,7 @@ import json
 
 from karma.models import User
 from karma.stats import all_stats
-from karma.utils import cached, ym_to_js_timestamp
+from karma.utils import cached, ym_to_js_timestamp, get_week_start
 
 PER_PAGE = 50
 SEARCH_PER_PAGE = 30
@@ -44,13 +44,18 @@ def get_user_context(name):
         most_loved_users = User.objects.most_loved_users(user)[0:5]
         most_loved_by = User.objects.most_loved_by(user)[0:5]
 
+        sends_this_week = User.objects.sends_this_week(user)
+        # WARNING: INCONSISTENCY (User objects vs. dict)!
+        sends_this_week.append({'points' : sum(u.points for u in sends_this_week)})
+
     except User.DoesNotExist:
         raise Http404()
 
     return dict(user=user, points=points, points_sent=points_sent,
                 monthly_history=json.dumps(monthly_history),
                 most_loved_users=most_loved_users,
-                most_loved_by=most_loved_by)
+                most_loved_by=most_loved_by,
+                sends_this_week=sends_this_week)
 
 def user(request, name):
     context = get_user_context(name)

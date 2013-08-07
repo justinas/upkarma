@@ -1,6 +1,8 @@
 from django.db import models
 from django.db.models import Sum
 
+from karma.utils import get_week_start
+
 class UserManager(models.Manager):
     def most_loved_users(self, user):
         """
@@ -33,6 +35,32 @@ class UserManager(models.Manager):
         qs = qs.order_by('-points')
 
         return qs
+
+    def sends_this_week(self, user):
+        """
+        Returns a summary of points sent this week,
+        grouped by user.
+
+        It essentially helps user to see
+        their own limit usage
+        """
+
+        # django fucks up with annotations + filtering + stuff
+        # so we're using raw here
+
+        query = """SELECT u.*, SUM(t.amount) AS points
+        FROM karma_user u
+        JOIN karma_tweet t
+        ON t.receiver_id = u.id
+        WHERE t.sender_id = %s
+        AND t.date >= %s
+        GROUP BY u.id
+        ORDER BY points DESC
+        """
+
+        qs = self.raw(query, [user.id, get_week_start()])
+
+        return list(qs)
 
     def with_points(self):
         qs = self.get_query_set()
