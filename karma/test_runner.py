@@ -7,7 +7,7 @@ class KarmaTestRunner(DjangoTestSuiteRunner):
         logging.disable(logging.DEBUG)
 
         if not test_labels:
-            test_labels = ['karma', 'bot', 'importer', 'stream']
+            test_labels = ['karma', 'bot', 'importer', 'stream', 'news']
 
         super(KarmaTestRunner, self).run_tests(test_labels, extra_tests,
                                               **kwargs)
