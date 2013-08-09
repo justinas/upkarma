@@ -15,7 +15,7 @@ MANAGERS = ADMINS
 AUTH_USER_MODEL = 'karma.User'
 AUTHENTICATION_BACKENDS = ('karma.auth.TwitterBackend',)
 
-TIME_ZONE = 'GMT'
+TIME_ZONE = 'Europe/Vilnius'
 USE_TZ = True
 
 LANGUAGE_CODE = 'lt-LT'
