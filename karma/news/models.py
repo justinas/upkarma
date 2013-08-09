@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 
 from datetime import datetime
-import markdown
+import markdown2 as markdown
 
 # text formats
 HTML = 0

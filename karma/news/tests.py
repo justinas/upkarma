@@ -35,5 +35,5 @@ class NewsTest(TestCase):
             entry = EntryFactory.create(author=self.user, title=' ')
             entry.text = '**not weak**'
             entry.save()
-            self.assertEquals(entry.text_rendered,
+            self.assertEquals(entry.text_rendered.strip(),
                           """<p><strong>not weak</strong></p>""")
