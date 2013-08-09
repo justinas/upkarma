@@ -91,6 +91,7 @@ INSTALLED_APPS = (
 
     'south',
     'rest_framework',
+    'markdown_deux',
 
     'karma',
     'karma.importer',
