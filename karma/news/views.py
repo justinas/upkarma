@@ -6,5 +6,5 @@ def news_list(request):
     entries = Entry.public.all()
 
     context = dict(entries=entries)
-
+    context['active_page'] = 'news'
     return render(request, 'karma/news_list.html', context)
