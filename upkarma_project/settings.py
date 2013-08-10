@@ -113,6 +113,14 @@ REST_FRAMEWORK = {
     ]
 }
 
+MARKDOWN_DEUX_STYLES = {
+    "trusted": {
+        # Allow raw HTML (WARNING: don't use this for user-generated
+        # Markdown for your site!).
+        "safe_mode": False,
+    }
+}
+
 TEST_RUNNER = 'karma.test_runner.KarmaTestRunner'
 
 # let's put it in the container folder and not the project folder itself
