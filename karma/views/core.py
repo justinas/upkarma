@@ -106,4 +106,7 @@ def search(request):
     return render(request, 'karma/search_results.html', context)
 
 def guide(request):
-    return render(request, 'karma/guide.html')
+    context = {}
+    context['active_page'] = 'guide'
+
+    return render(request, 'karma/guide.html', context)
