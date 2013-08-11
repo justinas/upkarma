@@ -76,8 +76,11 @@ def all_stats():
     results['total_points'] = total_points()
     results['total_times_sent'] = total_times_sent()
     # average amount per send
-    results['avg_per_send'] = (float(results['total_points']) /
+    try:
+        results['avg_per_send'] = (float(results['total_points']) /
                                results['total_times_sent'])
+    except ZeroDivisionError:
+        results['avg_per_send'] = 0.0
     results['minutes_between_sends'] = minutes_between_sends()
 
     # for graphs
