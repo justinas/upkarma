@@ -10,14 +10,14 @@ def total_points():
     Returns the total amount
     of points sent
     """
-    return Tweet.objects.all().aggregate(s=Sum('amount'))['s']
+    return Tweet.objects.all().aggregate(s=Sum('amount'))['s'] or 0
 
 def total_times_sent():
     """
     Returns the total number of
     times points have been sent
     """
-    return Tweet.objects.all().aggregate(s=Count('amount'))['s']
+    return Tweet.objects.all().aggregate(s=Count('amount'))['s'] or 0
 
 def minutes_between_sends():
     try:
