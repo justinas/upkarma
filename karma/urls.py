@@ -21,5 +21,6 @@ urlpatterns = patterns(
     url(r'^auth/logout/$', views.auth.logout_view),
 
     url(r'^news/$', news_views.news_list),
+    url(r'^news/(\d+)/$', news_views.news_single),
     url(r'^guide/$', views.guide),
 )
