@@ -127,6 +127,7 @@ TEST_RUNNER = 'karma.test_runner.KarmaTestRunner'
 IMPORTER_LOG_FILENAME = os.path.join(DIRNAME, '..', 'karma_importer.log')
 BOT_LOG_FILENAME = os.path.join(DIRNAME, '..', 'karma_bot.log')
 OTHER_LOG_FILENAME = os.path.join(DIRNAME, '..', 'karma_other.log')
+ERROR_LOG_FILENAME = os.path.join(DIRNAME, '..', 'karma_errors.log')
 
 LOGGING = {
     'version': 1,
@@ -137,10 +138,11 @@ LOGGING = {
         }
     },
     'handlers': {
-        'mail_admins': {
-            'level': 'ERROR',
-            'class': 'django.utils.log.AdminEmailHandler',
+        'log_error': {
+            'level' : 'ERROR',
+            'class' : 'logging.FileHandler',
             'filters': ['require_debug_false'],
+            'filename' : ERROR_LOG_FILENAME,
         },
         'log_importer': {
             'level' : 'DEBUG',
@@ -168,7 +170,7 @@ LOGGING = {
     },
     'loggers': {
         'django.request': {
-            'handlers': ['mail_admins'],
+            'handlers': ['log_error'],
             'level': 'ERROR',
             'propagate': True,
         },
