@@ -19,6 +19,7 @@ urlpatterns = patterns(
     url(r'^auth/login/$', views.auth.start_login),
     url(r'^auth/callback/$', views.auth.callback),
     url(r'^auth/logout/$', views.auth.logout_view),
+    url(r'^auth/no-user/$', views.auth.no_user),
 
     url(r'^news/$', news_views.news_list),
     url(r'^news/(\d+)/$', news_views.news_single),

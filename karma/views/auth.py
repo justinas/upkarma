@@ -2,6 +2,8 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
+from django.shortcuts import render
+
 from requests_oauthlib import OAuth1Session
 
 from karma.models import User
@@ -57,8 +59,8 @@ def callback(request):
 
     # log them in
     user = authenticate(twitter_id=tokens['user_id'])
-    if user is None:
-        raise Exception('TODO: redirect to error page')
+    if user is None or user.banned:
+        return HttpResponseRedirect(reverse(no_user))
 
     login(request, user)
 
@@ -68,3 +70,6 @@ def logout_view(request):
     logout(request)
 
     return HttpResponseRedirect(reverse('karma.views.index'))
+
+def no_user(request):
+    return render(request, 'karma/auth_no_user.html')
