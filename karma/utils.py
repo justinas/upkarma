@@ -92,7 +92,6 @@ def tweetback(message, tweet):
                             in_reply_to_status_id=tweet['id_str'])
         log.debug(u'Tweeted: `{0}`'.format(message))
     except TwitterError as e:
-        # TODO: log
         log.error(u'Tweet `{0}` failed with an exception:\n{1}'.format(message,e))
         pass
 
