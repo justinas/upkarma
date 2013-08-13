@@ -88,3 +88,12 @@ class PublicUserManager(UserManager):
         qs = super(PublicUserManager, self).get_query_set()
         # do not return banned users
         return qs.filter(banned=False)
+
+class PublicTweetManager(models.Manager):
+    def get_query_set(self):
+        """
+        Replicates the filters done
+        by PublicUserManager
+        """
+        qs = super(PublicTweetManager, self).get_query_set()
+        return qs.filter(receiver__banned=False, sender__banned=False)

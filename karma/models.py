@@ -10,7 +10,7 @@ from twitter import TwitterHTTPError
 
 from .utils import get_global_client, get_week_start
 from .exceptions import SenderBanned, ReceiverBanned
-from .managers import UserManager, PublicUserManager
+from .managers import UserManager, PublicUserManager, PublicTweetManager
 
 class User(AbstractBaseUser):
     screen_name = models.CharField('Twitter screen name', unique=True,
@@ -208,6 +208,8 @@ class Tweet(models.Model):
 
     text = models.TextField(blank=True)
 
+    objects = models.Manager()
+    public = PublicTweetManager()
 
     def clean(self):
         # ban checks
