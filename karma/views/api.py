@@ -6,7 +6,6 @@ from karma.models import Tweet
 User = get_user_model()
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
-
     class Meta:
         model = User
         fields = ['id', 'screen_name', 'twitter_id', 'avatar', 'url']
@@ -28,7 +27,7 @@ class TweetSerializer(serializers.HyperlinkedModelSerializer):
 
 class TweetViewSet(viewsets.ReadOnlyModelViewSet):
     model = Tweet
-    queryset = Tweet.objects.all().order_by('pk')
+    queryset = Tweet.public.all().order_by('pk')
     serializer_class = TweetSerializer
 
     paginate_by = 50
