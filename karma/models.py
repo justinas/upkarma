@@ -223,6 +223,11 @@ class Tweet(models.Model):
             raise ReceiverBanned(u'Vartotojas, kuriam siunčiate karmos'
                     u' buvo pašalintas iš žaidimo')
 
+        if self.sender == self.receiver:
+            msg = u'Negalima duoti karmos taškų sau.'
+            raise ValidationError(msg)
+
+
         # amount check
         amounts = settings.UPKARMA_SETTINGS['valid_amount_range']
 

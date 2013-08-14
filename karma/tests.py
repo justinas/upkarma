@@ -197,6 +197,11 @@ class TweetModelTest(TestCase):
                   sender=self.guy2, date=datetime.now())
         self.assertRaises(ValidationError, t.save)
 
+    def test_receiver_equals_sender(self):
+        t = Tweet(amount=5, twitter_id='42', receiver=self.guy1,
+                  sender=self.guy1, date=datetime.now())
+        self.assertRaises(ValidationError, t.save)
+
     def test_sender_banned(self):
         self.guy2.banned = True
         self.guy2.save()
