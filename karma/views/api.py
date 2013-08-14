@@ -1,3 +1,4 @@
+#coding=utf8
 from django.contrib.auth import get_user_model
 from rest_framework import viewsets, serializers, relations
 
@@ -26,6 +27,13 @@ class TweetSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['id', 'receiver', 'sender', 'amount', 'text', 'twitter_id', 'url']
 
 class TweetViewSet(viewsets.ReadOnlyModelViewSet):
+    u"""
+    `Tweet` šiuo atveju yra žinutė,
+    kuri buvo užskaityta upkarmoas boto
+    kaip teisinga ir už ją buvo priskaičiuota
+    karmos taškų.
+
+    """
     model = Tweet
     queryset = Tweet.public.all().order_by('pk')
     serializer_class = TweetSerializer
