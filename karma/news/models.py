@@ -43,3 +43,5 @@ class Entry(models.Model):
 
         super(Entry, self).save()
 
+    def __unicode__(self):
+        return u'{0} (published: {1})'.format(self.title, self.published)
