@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils.timezone import now
 
 from datetime import datetime
 import markdown2 as markdown
@@ -14,7 +15,7 @@ class PublicEntryManager(models.Manager):
     def get_query_set(self):
         qs = super(PublicEntryManager, self).get_query_set()
         # only published entries from the past
-        qs = qs.filter(published=True, date__lte=datetime.now())
+        qs = qs.filter(published=True, date__lte=now())
         # order by date DESC
         qs = qs.order_by('-date')
 
