@@ -100,7 +100,7 @@ class UserModelTest(TestCase):
         self.assertEquals(u.screen_name, 'rsarver')
         # let's ignore the protocol for now since we might want https later
         self.assertTrue(u.avatar.endswith(
-            '://a0.twimg.com/profile_images/1777569006/image1327396628_normal.png')
+            'twimg.com/profile_images/1777569006/image1327396628_normal.png')
         )
 
     def test_get_limit_usage(self):

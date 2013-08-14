@@ -165,7 +165,11 @@ class User(AbstractBaseUser):
         info = tw.users.show(user_id=twitter_id)
 
         self.screen_name = info['screen_name']
-        self.avatar = info['profile_image_url']
+        if 'profile_image_url_https' in info:
+            self.avatar = info['profile_image_url_https']
+        else:
+            self.avatar = info['profile_image_url']
+
         self.twitter_id = info['id_str']
 
 
