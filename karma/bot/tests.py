@@ -53,9 +53,16 @@ SEARCH_BLOBS = [
 ]
 
 
-class BotFormatHandlingTest(TestCase):
+class BotLogicTest(TestCase):
     def setUp(self):
         self.bot = Bot()
+        self.guy1 = User.objects.create(screen_name='guy1', twitter_id='1')
+        self.guy2 = User.objects.create(screen_name='guy2', twitter_id='2')
+
+    def tearDown(self):
+        Tweet.objects.all().delete()
+        User.objects.all().delete()
+
     def test_bot_fails_on_missing_amount(self):
         t = get_base_tweet()
         t['text'] = ht('  @guy2')
@@ -86,6 +93,15 @@ class BotFormatHandlingTest(TestCase):
 
         self.bot.process_tweet(t)
         self.assertEquals(Tweet.objects.get().amount, 3)
+
+    def test_retweets_are_skipped(self):
+        t = get_base_tweet()
+
+        # any truthy value will be skipped
+        t['retweeted_status'] = {'id_str' :'123doesntmatter'}
+
+        self.bot.process_tweet(t)
+        self.assertEquals(Tweet.objects.all().count(), 0)
 
 
 class BotUserFindingTest(TestCase):

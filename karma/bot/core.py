@@ -137,6 +137,12 @@ class Bot(object):
         as specified at https://dev.twitter.com/docs/platform-objects/tweets,
         but already decoded from JSON
         """
+        retweeted = tweet.get('retweeted_status', None)
+
+        if retweeted:
+            self.log.debug("Tweet id {0} was a retweet, so it was skipped.".format(tweet['id_str']))
+            return
+
         mentions = tweet['entities']['user_mentions']
         if not mentions:
             raise BadFormat(u'Nenurodėte, kokiam vartotojui duoti karmos')
