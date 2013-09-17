@@ -82,7 +82,11 @@ class BotFormatHandlingTest(TestCase):
 
     def test_bot_extracts_amount_correctly(self):
         t = get_base_tweet()
-        t['text'] = ht('  3 @guy1')
+        t['text'] = ht(' 3 @guy2')
+
+        self.bot.process_tweet(t)
+        self.assertEquals(Tweet.objects.get().amount, 3)
+
 
 class BotUserFindingTest(TestCase):
     def setUp(self):
