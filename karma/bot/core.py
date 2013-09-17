@@ -11,6 +11,7 @@ except ImportError:
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils.timezone import utc
+from twitter import TwitterHTTPError
 
 from ..exceptions import BadFormat
 from ..models import User, Tweet
