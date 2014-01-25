@@ -1,9 +1,9 @@
-Django==1.5.4
+Django>=1.5.4
 SQLAlchemy==0.8.1
 South==0.8.1
 argparse==1.2.1
 django-debug-toolbar==0.9.4
-django-debug-toolbar-template-timings==0.4.6
+django-debug-toolbar-template-timings
 django-extensions==1.1.1
 django-markdown-deux==1.0.4
 django-postgrespool==0.2.4
