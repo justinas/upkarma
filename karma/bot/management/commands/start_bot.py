@@ -24,5 +24,7 @@ class Command(BaseCommand):
             sys.exit(0)
         except BaseException as e:
             tb = traceback.format_exc()
-            log.error(u'start_bot shutting down because of an exception\n'+tb)
+            # prevents respawning too fast
+            time.sleep(600)
+            log.error(u'start_bot sleeping 10 minutes and shutting down because of an exception\n'+tb)
             sys.exit(1)
