@@ -1,5 +1,5 @@
 from redis import StrictRedis
-from twitter import Twitter, OAuth
+from twitter import Twitter, OAuth, TwitterError
 from datetime import date, datetime, timedelta
 from time import mktime
 import logging
