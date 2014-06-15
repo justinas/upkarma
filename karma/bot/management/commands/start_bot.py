@@ -16,8 +16,8 @@ class Command(BaseCommand):
         if not max_id:
             raise CommandError('max_id is not set')
 
-        bot = Bot()
         try:
+            bot = Bot()
             log.debug(u'start_bot starting')
             bot.run(max_id)
         except KeyboardInterrupt:
