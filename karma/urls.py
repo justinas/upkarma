@@ -10,10 +10,10 @@ api_router.register(r'tweets', views.api.TweetViewSet)
 
 urlpatterns = patterns(
     '',
-    url(r'^$', views.index),
-    url(r'^user/(.+)/$', views.user),
-    url(r'^search/$', views.search),
-    url(r'^stats/$', views.stats),
+    url(r'^$', views.index, name='karma.views.index'),
+    url(r'^user/(.+)/$', views.user, name='karma.views.user'),
+    url(r'^search/$', views.search, name='karma.views.search'),
+    url(r'^stats/$', views.stats, name='karma.views.stats'),
     url(r'^api/', include(api_router.urls)),
 
     url(r'^auth/login/$', views.auth.start_login),
@@ -23,5 +23,5 @@ urlpatterns = patterns(
 
     url(r'^news/$', news_views.news_list),
     url(r'^news/(\d+)/$', news_views.news_single),
-    url(r'^guide/$', views.guide),
+    url(r'^guide/$', views.guide, name='karma.views.guide'),
 )
