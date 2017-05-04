@@ -135,7 +135,7 @@ class User(AbstractBaseUser):
         thus freeing the name.
         """
         try:
-            u = User.objects.exclude(pk=self.pk).get(screen_name=self.screen_name)
+            u = User.objects.exclude(pk=self.pk).get(screen_name__iexact=self.screen_name)
         except User.DoesNotExist:
             # no user by our name, carry on
             return
