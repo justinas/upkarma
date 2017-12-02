@@ -19,8 +19,8 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     paginate_by = 50
 
 class TweetSerializer(serializers.HyperlinkedModelSerializer):
-    sender = relations.PrimaryKeyRelatedField()
-    receiver = relations.PrimaryKeyRelatedField()
+    sender = relations.PrimaryKeyRelatedField(read_only=True)
+    receiver = relations.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Tweet
