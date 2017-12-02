@@ -1,69 +1,48 @@
 # -*- coding: utf-8 -*-
-import datetime
-from south.db import db
-from south.v2 import SchemaMigration
-from django.db import models
+from __future__ import unicode_literals
+
+from django.db import models, migrations
+import django.utils.timezone
+import django.db.models.deletion
+from django.conf import settings
 
 
-class Migration(SchemaMigration):
+class Migration(migrations.Migration):
 
-    def forwards(self, orm):
-        # Adding model 'User'
-        db.create_table(u'karma_user', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('password', self.gf('django.db.models.fields.CharField')(max_length=128)),
-            ('last_login', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('screen_name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
-            ('twitter_id', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('avatar', self.gf('django.db.models.fields.URLField')(max_length=200, blank=True)),
-            ('banned', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('points', self.gf('django.db.models.fields.IntegerField')(default=0)),
-        ))
-        db.send_create_signal(u'karma', ['User'])
+    dependencies = [
+    ]
 
-        # Adding model 'Tweet'
-        db.create_table(u'karma_tweet', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('sender', self.gf('django.db.models.fields.related.ForeignKey')(related_name='karma_sends', null=True, on_delete=models.SET_NULL, to=orm['karma.User'])),
-            ('receiver', self.gf('django.db.models.fields.related.ForeignKey')(related_name='karma_receives', null=True, on_delete=models.SET_NULL, to=orm['karma.User'])),
-            ('amount', self.gf('django.db.models.fields.IntegerField')()),
-            ('date', self.gf('django.db.models.fields.DateTimeField')()),
-            ('twitter_id', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('text', self.gf('django.db.models.fields.TextField')(blank=True)),
-        ))
-        db.send_create_signal(u'karma', ['Tweet'])
-
-
-    def backwards(self, orm):
-        # Deleting model 'User'
-        db.delete_table(u'karma_user')
-
-        # Deleting model 'Tweet'
-        db.delete_table(u'karma_tweet')
-
-
-    models = {
-        u'karma.tweet': {
-            'Meta': {'object_name': 'Tweet'},
-            'amount': ('django.db.models.fields.IntegerField', [], {}),
-            'date': ('django.db.models.fields.DateTimeField', [], {}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'receiver': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'karma_receives'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['karma.User']"}),
-            'sender': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'karma_sends'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['karma.User']"}),
-            'text': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'twitter_id': ('django.db.models.fields.CharField', [], {'max_length': '255'})
-        },
-        u'karma.user': {
-            'Meta': {'object_name': 'User'},
-            'avatar': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
-            'banned': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'points': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
-            'screen_name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
-            'twitter_id': ('django.db.models.fields.CharField', [], {'max_length': '255'})
-        }
-    }
-
-    complete_apps = ['karma']
+    operations = [
+        migrations.CreateModel(
+            name='User',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('password', models.CharField(max_length=128, verbose_name='password')),
+                ('last_login', models.DateTimeField(default=django.utils.timezone.now, verbose_name='last login')),
+                ('screen_name', models.CharField(unique=True, max_length=255, verbose_name=b'Twitter screen name')),
+                ('twitter_id', models.CharField(max_length=255, verbose_name=b'Twitter id')),
+                ('avatar', models.URLField(verbose_name=b'Twitter avatar URL', blank=True)),
+                ('banned', models.BooleanField(default=0, verbose_name=b'Boolean showing if user is banned')),
+                ('admin', models.BooleanField(default=0, verbose_name=b'Boolean showing if user is an admin')),
+            ],
+            options={
+                'abstract': False,
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Tweet',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('amount', models.IntegerField(verbose_name=b'Amount of points')),
+                ('date', models.DateTimeField()),
+                ('twitter_id', models.CharField(max_length=255, verbose_name=b'Twitter id of the tweet')),
+                ('text', models.TextField(blank=True)),
+                ('receiver', models.ForeignKey(related_name='karma_receives', on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL, null=True)),
+                ('sender', models.ForeignKey(related_name='karma_sends', on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL, null=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+    ]

@@ -10,7 +10,7 @@ class UserManager(models.Manager):
         that received the most points
         from `user`
         """
-        qs = self.get_query_set()
+        qs = self.get_queryset()
         # get users that received karma from `user`
         qs = qs.filter(karma_receives__sender=user)
         # sum the points they received
@@ -26,7 +26,7 @@ class UserManager(models.Manager):
         that sent the most points
         from `user`
         """
-        qs = self.get_query_set()
+        qs = self.get_queryset()
         # get users that sent karma to `user`
         qs = qs.filter(karma_sends__receiver=user)
         # sum the points
@@ -63,11 +63,11 @@ class UserManager(models.Manager):
         return list(qs)
 
     def with_points(self):
-        qs = self.get_query_set()
+        qs = self.get_queryset()
         return qs.annotate(points=Sum('karma_receives__amount'))
 
     def with_points_sent(self):
-        qs = self.get_query_set()
+        qs = self.get_queryset()
         return qs.annotate(points=Sum('karma_sends__amount'))
 
     def top(self):
@@ -84,16 +84,16 @@ class PublicUserManager(UserManager):
     While `UserManager` is suitable for internal work,
     `PublicUserManager` should be used in views, API, etc.
     """
-    def get_query_set(self):
-        qs = super(PublicUserManager, self).get_query_set()
+    def get_queryset(self):
+        qs = super(PublicUserManager, self).get_queryset()
         # do not return banned users
         return qs.filter(banned=False)
 
 class PublicTweetManager(models.Manager):
-    def get_query_set(self):
+    def get_queryset(self):
         """
         Replicates the filters done
         by PublicUserManager
         """
-        qs = super(PublicTweetManager, self).get_query_set()
+        qs = super(PublicTweetManager, self).get_queryset()
         return qs.filter(receiver__banned=False, sender__banned=False)

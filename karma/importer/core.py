@@ -13,7 +13,7 @@ DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
 log = logging.getLogger('karma.importer')
 
-@transaction.commit_on_success
+@transaction.atomic
 def import_from_dump(blob, silent=False):
     """Takes a JSON blob from a dumpdata file from the old upkarma
     and imports the Tweets and Users from that"""

@@ -12,8 +12,8 @@ MARKDOWN = 1
 # default to markdown
 
 class PublicEntryManager(models.Manager):
-    def get_query_set(self):
-        qs = super(PublicEntryManager, self).get_query_set()
+    def get_queryset(self):
+        qs = super(PublicEntryManager, self).get_queryset()
         # only published entries from the past
         qs = qs.filter(published=True, date__lte=now())
         # order by date DESC
