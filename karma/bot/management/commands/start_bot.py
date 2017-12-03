@@ -4,7 +4,7 @@ import traceback
 import sys
 import time
 
-from karma.bot import Bot
+from karma.bot.core import Bot
 from karma.utils import get_redis_client
 
 class Command(BaseCommand):

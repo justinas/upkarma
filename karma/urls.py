@@ -8,8 +8,7 @@ api_router = DefaultRouter()
 api_router.register(r'users', views.api.UserViewSet)
 api_router.register(r'tweets', views.api.TweetViewSet)
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'^$', views.index, name='karma.views.index'),
     url(r'^user/(.+)/$', views.user, name='karma.views.user'),
     url(r'^search/$', views.search, name='karma.views.search'),
@@ -24,4 +23,4 @@ urlpatterns = patterns(
     url(r'^news/$', news_views.news_list),
     url(r'^news/(\d+)/$', news_views.news_single),
     url(r'^guide/$', views.guide, name='karma.views.guide'),
-)
+]
