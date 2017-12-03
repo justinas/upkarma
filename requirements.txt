@@ -1,5 +1,4 @@
 Django>=1.8,<1.9
-SQLAlchemy==0.8.1
 argparse==1.2.1
 django-debug-toolbar==0.9.4
 django-debug-toolbar-template-timings
