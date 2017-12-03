@@ -27,7 +27,7 @@ class TweetSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['id', 'receiver', 'sender', 'amount', 'text', 'twitter_id', 'url']
 
 class TweetViewSet(viewsets.ReadOnlyModelViewSet):
-    u"""
+    """
     `Tweet` šiuo atveju yra žinutė,
     kuri buvo užskaityta upkarmoas boto
     kaip teisinga ir už ją buvo priskaičiuota

@@ -28,12 +28,12 @@ class NewsTest(TestCase):
             entry = EntryFactory.create(author=self.user, title=' ')
             entry.text = '**not weak**'
             entry.save()
-            self.assertEquals(entry.text_rendered, entry.text)
+            self.assertEqual(entry.text_rendered, entry.text)
 
     def test_markdown_rendering(self):
         with self.settings(KARMA_NEWS_FORMAT=MARKDOWN):
             entry = EntryFactory.create(author=self.user, title=' ')
             entry.text = '**not weak**'
             entry.save()
-            self.assertEquals(entry.text_rendered.strip(),
+            self.assertEqual(entry.text_rendered.strip(),
                           """<p><strong>not weak</strong></p>""")

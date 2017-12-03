@@ -1,1 +1,1 @@
-from core import import_from_dump
+from .core import import_from_dump

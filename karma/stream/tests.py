@@ -26,8 +26,8 @@ class StreamTestCase(TestCase):
         tweet = json.loads(self.tweet_body)
         stream = TwitterStream('dummy', 'dummy', 'dummy', 'dummy')
         tweets = [t for t in stream.statuses_filter()]
-        self.assertEquals(len(tweets), 2)
-        self.assertEquals(tweet['id'], tweets[0]['id'])
+        self.assertEqual(len(tweets), 2)
+        self.assertEqual(tweet['id'], tweets[0]['id'])
 
     def test_passes_args_correctyle(self):
         args = {'track' : 'trains', 'oh' : 'hai'}
@@ -40,8 +40,8 @@ class StreamTestCase(TestCase):
 
         qs = flatten_qs(req.querystring)
 
-        self.assertEquals(qs['track'], args['track'])
-        self.assertEquals(qs['oh'], args['oh'])
+        self.assertEqual(qs['track'], args['track'])
+        self.assertEqual(qs['oh'], args['oh'])
 
     def test_raises_on_unknown_message(self):
         httpretty.register_uri(httpretty.POST, TwitterStream.URL,

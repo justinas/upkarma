@@ -218,13 +218,13 @@ class Tweet(models.Model):
     def clean(self):
         # ban checks
         if self.sender.banned:
-            raise SenderBanned(u'Jūs buvote pašalintas iš žaidimo.')
+            raise SenderBanned('Jūs buvote pašalintas iš žaidimo.')
         if self.receiver.banned:
-            raise ReceiverBanned(u'Vartotojas, kuriam siunčiate karmos'
-                    u' buvo pašalintas iš žaidimo')
+            raise ReceiverBanned('Vartotojas, kuriam siunčiate karmos'
+                    ' buvo pašalintas iš žaidimo')
 
         if self.sender == self.receiver:
-            msg = u'Negalima duoti karmos taškų sau.'
+            msg = 'Negalima duoti karmos taškų sau.'
             raise ValidationError(msg)
 
 
@@ -232,8 +232,8 @@ class Tweet(models.Model):
         amounts = settings.UPKARMA_SETTINGS['valid_amount_range']
 
         if self.amount < amounts[0] or self.amount > amounts[1]:
-            msg = (u'Netinkamas taškų kiekis. Viena žinute galima' \
-                  u' duoti nuo {0} iki {1} tšk.').format(*amounts)
+            msg = ('Netinkamas taškų kiekis. Viena žinute galima' \
+                  ' duoti nuo {0} iki {1} tšk.').format(*amounts)
             raise ValidationError(msg)
 
         self.clean_limits()
@@ -244,15 +244,15 @@ class Tweet(models.Model):
 
         left = limits['per_week'] - usage['per_week']
         if left < self.amount:
-            msg = (u'Nepakankamas savaitės taškų limitas.' \
-                  u' Šią savaitę jums liko {0} tšk.').format(left)
+            msg = ('Nepakankamas savaitės taškų limitas.' \
+                  ' Šią savaitę jums liko {0} tšk.').format(left)
             raise ValidationError(msg)
 
         left = limits['per_week_receiver'] - usage['per_week_receiver']
 
         if left < self.amount:
-            msg = (u'Nepakankamas savaitės taškų limitas šiam asmeniui.' \
-                   u' Šią savaitę jam dar galite duoti {0} tšk.').format(left)
+            msg = ('Nepakankamas savaitės taškų limitas šiam asmeniui.' \
+                   ' Šią savaitę jam dar galite duoti {0} tšk.').format(left)
             raise ValidationError(msg)
 
 

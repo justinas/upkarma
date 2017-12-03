@@ -19,13 +19,13 @@ class Command(BaseCommand):
 
         try:
             bot = Bot()
-            log.debug(u'start_bot starting')
+            log.debug('start_bot starting')
             bot.run(max_id)
         except KeyboardInterrupt:
             sys.exit(0)
         except BaseException as e:
             tb = traceback.format_exc()
-            log.error(u'start_bot sleeping 10 minutes and shutting down because of an exception\n'+tb)
+            log.error('start_bot sleeping 10 minutes and shutting down because of an exception\n'+tb)
             # prevents respawning too fast
             time.sleep(600)
             sys.exit(1)

@@ -11,13 +11,13 @@ class Command(BaseCommand):
         log = self.log = logging.getLogger('karma.other')
 
         try:
-            log.debug(u'update_avatars starting')
+            log.debug('update_avatars starting')
             self.update_avatars()
         except KeyboardInterrupt:
             sys.exit(0)
         except BaseException as e:
             tb = traceback.format_exc()
-            log.error(u'start_bot shutting down because of an exception\n'+tb)
+            log.error('start_bot shutting down because of an exception\n'+tb)
             sys.exit(1)
 
     def update_avatars(self):

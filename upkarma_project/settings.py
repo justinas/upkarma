@@ -214,6 +214,6 @@ UPKARMA_SETTINGS = {
 }
 
 try:
-    from local_settings import *
+    from .local_settings import *
 except ImportError:
     raise Exception('Needs local_settings to run')

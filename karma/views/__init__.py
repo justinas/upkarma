@@ -1,3 +1,3 @@
 from .core import *
-import auth
-import api
+from . import auth
+from . import api

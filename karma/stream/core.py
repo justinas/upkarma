@@ -20,9 +20,11 @@ class TwitterStream(object):
 
 
     def statuses_filter(self, **kwargs):
-        req = self.session.post(self.URL, params=kwargs, stream=True)
+        resp = self.session.post(self.URL, params=kwargs, stream=True)
+        if resp.encoding is None:
+            resp.encoding = 'utf-8'
         try:
-            for line in req.iter_lines():
+            for line in resp.iter_lines(decode_unicode=True):
                 line = line.strip()
                 if line:
                     try:

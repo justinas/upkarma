@@ -7,10 +7,7 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 from mock import MagicMock, patch
 
-try:
-    from urlparse import parse_qs
-except ImportError:
-    from urllib.parse import parse_qs
+from urllib.parse import parse_qs
 
 from .models import Tweet, User
 from .utils import tweetback, cached
@@ -27,8 +24,8 @@ def get_req_arg(key):
     """
     Gets an arg from httpretty's last request
     """
-    args = parse_qs(httpretty.HTTPretty.last_request.body)
-    return args[key][0].decode('utf-8')
+    args = parse_qs(httpretty.HTTPretty.last_request.body.decode('ascii'))
+    return args[key][0]
 
 def get_base_tweet():
     """
@@ -96,8 +93,8 @@ class UserModelTest(TestCase):
 
         u = User.from_twitter_id('42')
         # 2 guys from setUp + a new user
-        self.assertEquals(User.objects.count(), 3)
-        self.assertEquals(u.screen_name, 'rsarver')
+        self.assertEqual(User.objects.count(), 3)
+        self.assertEqual(u.screen_name, 'rsarver')
         # let's ignore the protocol for now since we might want https later
         self.assertTrue(u.avatar.endswith(
             'twimg.com/profile_images/1777569006/image1327396628_normal.png')
@@ -106,28 +103,28 @@ class UserModelTest(TestCase):
     def test_get_limit_usage(self):
         # testing without a receiver
         usage = self.guy1.get_limit_usage()
-        self.assertEquals(usage['per_week'], 0)
+        self.assertEqual(usage['per_week'], 0)
         self.assertNotIn('per_week_receiver', usage)
 
         # testing with a receiver
         usage = self.guy1.get_limit_usage(self.guy2)
-        self.assertEquals(usage['per_week'], 0)
-        self.assertEquals(usage['per_week_receiver'], 0)
+        self.assertEqual(usage['per_week'], 0)
+        self.assertEqual(usage['per_week_receiver'], 0)
 
         Tweet.objects.create(twitter_id='123', amount=5, sender=self.guy1,
                              receiver=self.guy2, date=datetime.now())
 
         # testing with a correct receiver
         usage = self.guy1.get_limit_usage(self.guy2)
-        self.assertEquals(usage['per_week'], 5)
-        self.assertEquals(usage['per_week_receiver'], 5)
+        self.assertEqual(usage['per_week'], 5)
+        self.assertEqual(usage['per_week_receiver'], 5)
 
         # testing with an incorrect receiver
         # of course, one cannot send karma to himself,
         # but that'll only helps
         usage = self.guy1.get_limit_usage(self.guy1)
-        self.assertEquals(usage['per_week'], 5)
-        self.assertEquals(usage['per_week_receiver'], 0)
+        self.assertEqual(usage['per_week'], 5)
+        self.assertEqual(usage['per_week_receiver'], 0)
 
     @httpretty.activate
     def test_renames_on_screen_name_clash(self):
@@ -155,7 +152,7 @@ class UserModelTest(TestCase):
         prev_guy1 = User.objects.get(twitter_id='1')
 
         # guy1 is renamed to donkey
-        self.assertEquals(prev_guy1.screen_name, 'donkey')
+        self.assertEqual(prev_guy1.screen_name, 'donkey')
 
     @httpretty.activate
     def test_deletes_on_screen_name_clash_if_404(self):
@@ -177,8 +174,8 @@ class UserModelTest(TestCase):
         Tweet(receiver=self.guy2, sender=self.guy1, twitter_id='1',
               amount=1, date=datetime.now()).save()
 
-        self.assertEquals(self.guy1.get_position(), 1)
-        self.assertEquals(self.guy2.get_position(), 2)
+        self.assertEqual(self.guy1.get_position(), 1)
+        self.assertEqual(self.guy2.get_position(), 2)
 
 class TweetModelTest(TestCase):
     def setUp(self):
@@ -272,8 +269,8 @@ class TweetbackTest(TestCase):
         t = get_base_tweet()
         tweetback("You're a wizard, Harry", t)
 
-        self.assertEquals(get_req_arg('status'), "@guy1 You're a wizard, Harry")
-        self.assertEquals(get_req_arg('in_reply_to_status_id'), str(t['id']))
+        self.assertEqual(get_req_arg('status'), "@guy1 You're a wizard, Harry")
+        self.assertEqual(get_req_arg('in_reply_to_status_id'), str(t['id']))
 
 class CachedDecoratorTest(TestCase):
     def setUp(self):
@@ -291,7 +288,7 @@ class CachedDecoratorTest(TestCase):
         # cache is empty
         self.cache_mock.get.return_value = None
 
-        self.assertEquals(func(), [1,2,3])
+        self.assertEqual(func(), [1,2,3])
         self.cache_mock.get.assert_called_with('this-is-a-key')
         self.cache_mock.set.assert_called_with('this-is-a-key', [1,2,3], None)
 
@@ -301,7 +298,7 @@ class CachedDecoratorTest(TestCase):
         # there's a result in cache
         self.cache_mock.get.return_value = [1,2,3]
 
-        self.assertEquals(func(), [1,2,3])
+        self.assertEqual(func(), [1,2,3])
         self.cache_mock.get.assert_called_with('this-is-a-key')
         # set() shouldn't be called when
         # the result is retrieved from cache

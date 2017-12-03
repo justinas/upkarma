@@ -3,10 +3,7 @@ import re
 from datetime import datetime
 import logging
 
-try:
-    from urlparse import parse_qs
-except ImportError:
-    from urllib.parse import parse_qs
+from urllib.parse import parse_qs
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -33,7 +30,7 @@ class Bot(object):
     def catchup(self, max_id):
         try:
             tweets = self.catchup_tweets(max_id)
-            self.log.debug(u'Tweets to catch up with: {0}'.format(
+            self.log.debug('Tweets to catch up with: {0}'.format(
                 [t['id_str'] for t in tweets]))
             for t in tweets:
                 # skip processed tweets
@@ -51,20 +48,20 @@ class Bot(object):
         Catches up with the tweets,
         then processes the tweet stream infinitely
         """
-        self.log.debug(u'Catching up with tweets since {0}'.format(max_id))
+        self.log.debug('Catching up with tweets since {0}'.format(max_id))
         self.catchup(max_id)
 
-        self.log.debug(u'Done catching up')
+        self.log.debug('Done catching up')
 
         client = get_stream_client()
 
-        self.log.debug(u'Starting the stream')
+        self.log.debug('Starting the stream')
         try:
             stream = client.statuses_filter(
                 track=settings.UPKARMA_SETTINGS['hashtag']
             )
             for t in stream:
-                self.log.debug(u'A new tweet on stream: {0}'.format(t['id']))
+                self.log.debug('A new tweet on stream: {0}'.format(t['id']))
                 # skip processed tweets
                 if self.red.sismember('processed_ids', t['id_str']):
                     continue
@@ -116,7 +113,7 @@ class Bot(object):
         tweetsback at the user
         with the error message
         """
-        self.log.debug(u'process_or_tweetback() id {0}'.format(tweet['id_str']))
+        self.log.debug('process_or_tweetback() id {0}'.format(tweet['id_str']))
         try:
             self.process_tweet(tweet)
             # no error, nothing to do here
@@ -124,8 +121,8 @@ class Bot(object):
         except BadFormat as e:
             msg = e.args[0]
         except User.DoesNotExist:
-            msg = u'Jūs dar nedalyvaujate žaidime. ' \
-                u'Paprašykite žaidėjų vieno karmos taško.'
+            msg = 'Jūs dar nedalyvaujate žaidime. ' \
+                'Paprašykite žaidėjų vieno karmos taško.'
         except ValidationError as e:
             msg = e.messages[0]
 
@@ -146,10 +143,10 @@ class Bot(object):
 
         mentions = tweet['entities']['user_mentions']
         if not mentions:
-            raise BadFormat(u'Nenurodėte, kokiam vartotojui duoti karmos')
+            raise BadFormat('Nenurodėte, kokiam vartotojui duoti karmos')
         if len(mentions) > 1:
-            raise BadFormat(u'Žinutėje daugiau negu vienas vartotojas '
-                            u'– karmos nebus duota')
+            raise BadFormat('Žinutėje daugiau negu vienas vartotojas '
+                            '– karmos nebus duota')
 
         receiver_data = mentions[0]
 
@@ -166,7 +163,7 @@ class Bot(object):
                 re.findall(settings.UPKARMA_SETTINGS['re_amount'], clean_text)[0]
             )
         except IndexError:
-            raise BadFormat(u'Nenurodyta, kiek karmos taškų skirti')
+            raise BadFormat('Nenurodyta, kiek karmos taškų skirti')
 
         # finding the sender
         try:
@@ -186,7 +183,7 @@ class Bot(object):
             except TwitterHTTPError as e:
                 if e.e.getcode() == 404:
                     # well, user has been deleted
-                    raise BadFormat(u'Vartotojas nerastas.')
+                    raise BadFormat('Vartotojas nerastas.')
 
         try:
             t = Tweet(receiver=receiver, sender=sender, amount=amount,

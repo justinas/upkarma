@@ -82,16 +82,16 @@ def tweetback(message, tweet):
     """
     log = logging.getLogger('karma.other')
     client = get_global_client()
-    message = u'@{0} {1}'.format(tweet['user']['screen_name'], message)
+    message = '@{0} {1}'.format(tweet['user']['screen_name'], message)
     if settings.DEBUG:
         # Don't tweet
-        log.debug(u'Not tweeted because of DEBUG=True: '+message)
+        log.debug('Not tweeted because of DEBUG=True: '+message)
         return
     try:
         client.statuses.update(status=message,
                             in_reply_to_status_id=tweet['id_str'])
-        log.debug(u'Tweeted: `{0}`'.format(message))
+        log.debug('Tweeted: `{0}`'.format(message))
     except TwitterError as e:
-        log.error(u'Tweet `{0}` failed with an exception:\n{1}'.format(message,e))
+        log.error('Tweet `{0}` failed with an exception:\n{1}'.format(message,e))
         pass
 

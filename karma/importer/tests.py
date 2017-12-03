@@ -59,7 +59,7 @@ class ImporterTestCase(TestCase):
         "date": "2011-11-26T14:18:41",
         "receiver": 2,
         "sender": 1,
-        "text": "%s 1 ta\u0161kas @Apsega",
+        "text": "%s 1 ta\\u0161kas @Apsega",
         "twitter_id": "140434086970929153"
         },
     "model": "karma.tweet",
@@ -90,36 +90,36 @@ class ImporterTestCase(TestCase):
         User.objects.all().delete()
 
     def test_creates_a_user(self):
-        self.assertEquals(User.objects.count(), 2)
+        self.assertEqual(User.objects.count(), 2)
         u = User.objects.get(pk=1)
 
         # username is now screen_name
-        self.assertEquals(u.screen_name, "cool_guy")
-        self.assertEquals(u.twitter_id, "42")
+        self.assertEqual(u.screen_name, "cool_guy")
+        self.assertEqual(u.twitter_id, "42")
 
     def test_creates_tweets(self):
         import_from_dump(self.TWEET_BLOB)
 
-        self.assertEquals(Tweet.objects.count(), 2)
+        self.assertEqual(Tweet.objects.count(), 2)
 
         t1 = Tweet.objects.get(pk=1)
         t2 = Tweet.objects.get(pk=2)
 
-        self.assertEquals(t1.amount, 5)
-        self.assertEquals(t2.amount, 1)
+        self.assertEqual(t1.amount, 5)
+        self.assertEqual(t2.amount, 1)
 
-        self.assertEquals(t1.date,
+        self.assertEqual(t1.date,
                           datetime(2011, 11, 26, 14, 17, 18).replace(tzinfo=utc))
-        self.assertEquals(t1.text, ht(" 5 @cool_guy"))
+        self.assertEqual(t1.text, ht(" 5 @cool_guy"))
 
         cnt1 = User.objects.filter(pk=1).aggregate(
             s=Sum('karma_receives__amount'))['s']
         cnt2 = User.objects.filter(pk=2).aggregate(
             s=Sum('karma_receives__amount'))['s']
 
-        self.assertEquals(cnt1, 5)
-        self.assertEquals(cnt2, 1)
+        self.assertEqual(cnt1, 5)
+        self.assertEqual(cnt2, 1)
 
     def test_skips_a_retweet(self):
         import_from_dump(self.RT_BLOB)
-        self.assertEquals(Tweet.objects.count(), 0)
+        self.assertEqual(Tweet.objects.count(), 0)

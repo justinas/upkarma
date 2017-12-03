@@ -92,7 +92,7 @@ class BotLogicTest(TestCase):
         t['text'] = ht(' 3 @guy2')
 
         self.bot.process_tweet(t)
-        self.assertEquals(Tweet.objects.get().amount, 3)
+        self.assertEqual(Tweet.objects.get().amount, 3)
 
     def test_retweets_are_skipped(self):
         t = get_base_tweet()
@@ -101,7 +101,7 @@ class BotLogicTest(TestCase):
         t['retweeted_status'] = {'id_str' :'123doesntmatter'}
 
         self.bot.process_tweet(t)
-        self.assertEquals(Tweet.objects.all().count(), 0)
+        self.assertEqual(Tweet.objects.all().count(), 0)
 
 
 class BotUserFindingTest(TestCase):
@@ -145,8 +145,8 @@ class BotUserFindingTest(TestCase):
 
         self.bot.process_tweet(t)
         self.assertTrue(self.fti_mock.called)
-        self.assertEquals(User.objects.count(), 3)
-        self.assertEquals(Tweet.objects.count(), 1)
+        self.assertEqual(User.objects.count(), 3)
+        self.assertEqual(Tweet.objects.count(), 1)
 
     def test_sender_banned(self):
         """
@@ -191,20 +191,20 @@ class ProcessOrTweetbackTest(TestCase):
         t['text'] = ht(' ')
 
         self.bot.process_or_tweetback(t)
-        self.assertTrue(get_req_arg('status').startswith(u'@guy1 Nenurodyta'))
+        self.assertTrue(get_req_arg('status').startswith('@guy1 Nenurodyta'))
 
         # User.DoesNotExist
         t = get_base_tweet()
         t['user']['id_str'] = '12435'
         self.bot.process_or_tweetback(t)
-        self.assertTrue(get_req_arg('status').startswith(u'@guy1 Jūs dar'))
+        self.assertTrue(get_req_arg('status').startswith('@guy1 Jūs dar'))
 
         # ValidationError
         self.guy1.banned = True
         self.guy1.save()
         t = get_base_tweet()
         self.bot.process_or_tweetback(t)
-        self.assertTrue(get_req_arg('status').startswith(u'@guy1 Jūs buvote'))
+        self.assertTrue(get_req_arg('status').startswith('@guy1 Jūs buvote'))
 
 class CatchupTest(TestCase):
     def setUp(self):
@@ -221,12 +221,12 @@ class CatchupTest(TestCase):
                 ])
 
         tweets = self.bot.catchup_tweets(0)
-        self.assertEquals(len(tweets), 4)
+        self.assertEqual(len(tweets), 4)
 
         requests = httpretty.HTTPretty.latest_requests
-        self.assertEquals(len(requests), 2)
+        self.assertEqual(len(requests), 2)
 
-        self.assertEquals(flatten_qs(requests[1].querystring)['max_id'], '2')
+        self.assertEqual(flatten_qs(requests[1].querystring)['max_id'], '2')
 """
         tweet = get_base_tweet()
         tweet['id'] = 1000
