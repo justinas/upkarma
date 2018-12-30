@@ -31,7 +31,7 @@ and can not be used for anything.
   from an earlier hacked-together version of Upkarma.
 * `karma/news` is a simple news app.
   I coded it because I like rolling my own stuff.
-* There is an Twitter OAuth based login mechanism,
+* There is a Twitter OAuth based login mechanism,
   but I never got around to implementing any additional features
   you would get when logged in.
 
