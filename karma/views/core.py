@@ -80,7 +80,7 @@ def search(request):
     qs = User.objects.filter(screen_name__icontains=query)
 
     if len(qs) == 1:
-        return HttpResponseRedirect(reverse('karma.views.user',
+        return HttpResponseRedirect(reverse('user',
                                             args=(qs[0].screen_name,)))
 
     paginator = Paginator(qs, SEARCH_PER_PAGE)
