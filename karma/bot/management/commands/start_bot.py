@@ -12,10 +12,13 @@ class Command(BaseCommand):
         log = logging.getLogger('karma.bot')
 
         red = get_redis_client()
-        max_id = int(red.get('max_id'))
+        max_id = red.get('max_id')
 
         if not max_id:
+            # TODO: assume 0 instead? dangerous
             raise CommandError('max_id is not set')
+
+        max_id = int(max_id)
 
         try:
             bot = Bot()
