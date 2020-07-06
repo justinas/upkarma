@@ -1,0 +1,10 @@
+from upkarma_project.settings import *
+
+# DEBUG = False
+# TEMPLATE_DEBUG = DEBUG
+
+SECRET_KEY = "VhKNcIUCnpUjyjLg0HSOhNEHT80diIj4vnU2LLx23Rk"
+
+INSTALLED_APPS += (
+    'karma_design',
+)
