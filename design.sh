@@ -23,7 +23,3 @@ then
 fi
 
 lessc $KD/less/upkarma.less > $KD/static/upkarma.css
-
-
-echo "Collecting static"
-$DIR/manage.py collectstatic --noinput
