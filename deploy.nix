@@ -3,30 +3,18 @@ let
   design = pkgs.stdenv.mkDerivation {
     name = "upkarma-design";
     src = karmaDesign;
+    nativeBuildInputs = with pkgs; [ lessc yuicompressor ];
     buildPhase = "";
     installPhase = ''
-      mkdir -p $out/share/src/karma_design
-      cp -r $src/. $out/share/src/karma_design
+      mkdir -p $out/share/src/karma_design/static
+      bash -c 'OUT=$out/share/src/karma_design/static source $src/design.sh full'
     '';
   };
-in
-pkgs.stdenv.mkDerivation
-{
-  name = "upkarma-deploy";
-  src = pkgs.symlinkJoin {
-    name = "upkarma-code-and-design";
-    paths = [ code design ];
+  env = pkgs.poetry2nix.mkPoetryEnv {
+    projectDir = "${code}/share/src/upkarma";
   };
-  buildInputs = [ code design ];
-  nativeBuildInputs = with pkgs; [ lessc yuicompressor ];
-  buildPhase = ''
-    mkdir -p temp/share/src/
-    cp -Lr $src/share/src/. temp/share/src # nasty copy :(
-    chmod -R 770 temp/share/src/karma_design # nasty chmod :(
-    (cd temp/share/src/upkarma && ./design.sh full)
-  '';
-  installPhase = ''
-    ls
-    cp -r temp/. $out/
-  '';
+in
+pkgs.symlinkJoin {
+  name = "upkarma-deploy";
+  paths = [ code design env ];
 }

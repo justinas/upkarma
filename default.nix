@@ -3,15 +3,10 @@
 , karmaDesign ? ../karma_design
 }:
 let
-  env = poetry2nix.mkPoetryEnv {
-    projectDir = src;
-  };
   src = ./.;
   code = pkgs.stdenv.mkDerivation {
     name = "upkarma";
     inherit src;
-
-    buildInputs = [ env ];
 
     buildPhase = "";
     installPhase = ''
