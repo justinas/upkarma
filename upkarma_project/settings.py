@@ -9,6 +9,19 @@ ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django_postgrespool',
+        'NAME': 'upkarma',
+        'USER': 'upkarma',
+        'PASSWORD': 'hunter2',
+        'HOST': '127.0.0.1',
+        'PORT': '',
+    }
+}
+
+SECRET_KEY = 'insecure-development-secret-key'
+
 MANAGERS = ADMINS
 
 AUTH_USER_MODEL = 'karma.User'
@@ -205,8 +218,3 @@ UPKARMA_SETTINGS = {
     },
     'callback_uri' : 'http://dummy/'
 }
-
-try:
-    from .local_settings import *
-except ImportError:
-    raise Exception('Needs local_settings to run')
