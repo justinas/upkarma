@@ -8,6 +8,7 @@ let
     installPhase = ''
       mkdir -p $out/share/src/karma_design/static
       bash -c 'OUT=$out/share/src/karma_design/static source $src/design.sh full'
+      cp -r * $out/share/src/karma_design/
     '';
   };
   env = pkgs.poetry2nix.mkPoetryEnv {
