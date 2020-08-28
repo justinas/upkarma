@@ -27,8 +27,5 @@ class Command(BaseCommand):
         except KeyboardInterrupt:
             sys.exit(0)
         except BaseException as e:
-            tb = traceback.format_exc()
-            log.error('start_bot sleeping 10 minutes and shutting down because of an exception\n'+tb)
-            # prevents respawning too fast
-            time.sleep(600)
+            print(traceback.print_exc(), file=sys.stderr)
             sys.exit(1)
