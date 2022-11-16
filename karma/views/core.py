@@ -14,12 +14,11 @@ from karma.utils import cached, ym_to_js_timestamp, get_week_start
 PER_PAGE = 50
 SEARCH_PER_PAGE = 30
 
-def index(request):
+def index(request, page_number=1):
     top = User.objects.top()
     paginator = Paginator(top, PER_PAGE)
 
     try:
-        page_number = request.GET.get('page', 1)
         page = paginator.page(page_number)
     except (PageNotAnInteger, EmptyPage):
         return HttpResponseRedirect(reverse('karma.views.index'))
