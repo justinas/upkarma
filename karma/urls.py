@@ -10,7 +10,7 @@ api_router.register(r'tweets', views.api.TweetViewSet)
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
-    url(r'^page/(\d+)$', views.index, name='index'),
+    url(r'^page/(\d+)/$', views.index, name='index'),
     url(r'^user/(.+)/$', views.user, name='user'),
     url(r'^search/$', views.search, name='search'),
     url(r'^stats/$', views.stats, name='stats'),
